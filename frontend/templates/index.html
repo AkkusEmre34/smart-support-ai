@@ -32,7 +32,7 @@
 
         <section class="support-card">
 
-            <form method="POST">
+            <form method="POST" id="support-form">
 
                 <label for="question">
                     Teknik sorununuz
@@ -49,6 +49,14 @@
                     Çözüm Bul
                 </button>
 
+                <div id="loading-box" class="loading-box">
+                    <div class="spinner"></div>
+
+                    <p>
+                        Sorunuz analiz ediliyor...
+                    </p>
+                </div>
+
             </form>
 
             {% if answer %}
@@ -57,10 +65,15 @@
 
                     <div class="answer-title">
                         <span>✅</span>
-                        <h2>Önerilen Çözüm</h2>
+
+                        <h2>
+                            Önerilen Çözüm
+                        </h2>
                     </div>
 
-                    <p>{{ answer }}</p>
+                    <p>
+                        {{ answer }}
+                    </p>
 
                 </div>
 
@@ -70,7 +83,9 @@
 
         <section class="examples">
 
-            <h2>Örnek Sorular</h2>
+            <h2>
+                Örnek Sorular
+            </h2>
 
             <p class="example-description">
                 Bir soruya tıklayarak soru kutusuna ekleyebilirsiniz.
@@ -101,10 +116,21 @@
     </main>
 
     <script>
-        const questionBox = document.getElementById("question");
+        const questionBox =
+            document.getElementById("question");
 
         const exampleQuestions =
             document.querySelectorAll(".example-question");
+
+        const supportForm =
+            document.getElementById("support-form");
+
+        const loadingBox =
+            document.getElementById("loading-box");
+
+        const solutionButton =
+            document.querySelector(".solution-button");
+
 
         exampleQuestions.forEach(function (button) {
             button.addEventListener("click", function () {
@@ -116,6 +142,16 @@
                     behavior: "smooth"
                 });
             });
+        });
+
+
+        supportForm.addEventListener("submit", function () {
+            loadingBox.style.display = "flex";
+
+            solutionButton.disabled = true;
+
+            solutionButton.textContent =
+                "Analiz ediliyor...";
         });
     </script>
 
