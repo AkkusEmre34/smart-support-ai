@@ -1,81 +1,199 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-    <title>Smart Support AI</title>
+body {
+    min-height: 100vh;
+    padding: 40px 20px;
+    font-family: Arial, Helvetica, sans-serif;
+    background: linear-gradient(
+        135deg,
+        #eef2ff,
+        #f8fafc
+    );
+    color: #1e293b;
+}
 
-    <link
-        rel="stylesheet"
-        href="{{ url_for('static', filename='style.css') }}"
-    >
-</head>
+.container {
+    width: 100%;
+    max-width: 850px;
+    margin: 0 auto;
+}
 
-<body>
+.header {
+    margin-bottom: 30px;
+    text-align: center;
+}
 
-    <main class="container">
+.logo {
+    margin-bottom: 10px;
+    font-size: 55px;
+}
 
-        <section class="header">
-            <div class="logo">🤖</div>
+.header h1 {
+    margin-bottom: 12px;
+    font-size: 38px;
+    color: #172554;
+}
 
-            <h1>Smart Support AI</h1>
+.header p {
+    color: #64748b;
+    font-size: 17px;
+    line-height: 1.6;
+}
 
-            <p>
-                Teknik sorununuzu yazın, sistem size uygun çözüm önerisini sunsun.
-            </p>
-        </section>
+.support-card {
+    padding: 35px;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 15px 40px rgba(15, 23, 42, 0.1);
+}
 
-        <section class="support-card">
+form {
+    display: flex;
+    flex-direction: column;
+}
 
-            <form method="POST">
+label {
+    margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: bold;
+}
 
-                <label for="question">
-                    Teknik sorununuz
-                </label>
+textarea {
+    width: 100%;
+    min-height: 130px;
+    padding: 16px;
+    border: 2px solid #cbd5e1;
+    border-radius: 12px;
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 1.5;
+    transition: 0.2s;
+}
 
-                <textarea
-                    id="question"
-                    name="question"
-                    placeholder="Örnek: Bilgisayarım Wi-Fi ağına bağlanmıyor."
-                    required
-                >{{ question }}</textarea>
+textarea:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+}
 
-                <button type="submit">
-                    Çözüm Bul
-                </button>
+.solution-button {
+    margin-top: 18px;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background: #4f46e5;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    transition: 0.2s;
+}
 
-            </form>
+.solution-button:hover {
+    background: #4338ca;
+    transform: translateY(-1px);
+}
 
-            {% if answer %}
-                <div class="answer-box">
+.answer-box {
+    margin-top: 25px;
+    padding: 22px;
+    border-left: 5px solid #22c55e;
+    border-radius: 12px;
+    background: #f0fdf4;
+}
 
-                    <div class="answer-title">
-                        <span>✅</span>
-                        <h2>Önerilen Çözüm</h2>
-                    </div>
+.answer-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
 
-                    <p>{{ answer }}</p>
+.answer-title h2 {
+    font-size: 20px;
+    color: #166534;
+}
 
-                </div>
-            {% endif %}
+.answer-box p {
+    color: #334155;
+    line-height: 1.7;
+}
 
-        </section>
+.examples {
+    margin-top: 30px;
+    text-align: center;
+}
 
-        <section class="examples">
+.examples h2 {
+    margin-bottom: 8px;
+    font-size: 20px;
+}
 
-            <h2>Örnek Sorular</h2>
+.example-description {
+    margin-bottom: 15px;
+    color: #64748b;
+    font-size: 14px;
+}
 
-            <div class="example-list">
-                <span>Wi-Fi bağlantım kesiliyor</span>
-                <span>Bilgisayardan ses gelmiyor</span>
-                <span>Yazıcı çıktı vermiyor</span>
-                <span>Mikrofonum çalışmıyor</span>
-            </div>
+.example-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
 
-        </section>
+.example-question {
+    margin: 0;
+    padding: 10px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 30px;
+    cursor: pointer;
+    background: white;
+    color: #475569;
+    font-size: 14px;
+    font-weight: normal;
+    transition: 0.2s;
+}
 
-    </main>
+.example-question:hover {
+    border-color: #4f46e5;
+    background: #eef2ff;
+    color: #4338ca;
+    transform: translateY(-1px);
+}
 
-</body>
-</html>
+@media screen and (max-width: 600px) {
+    body {
+        padding: 25px 12px;
+    }
+
+    .header h1 {
+        font-size: 30px;
+    }
+
+    .header p {
+        font-size: 15px;
+    }
+
+    .support-card {
+        padding: 22px;
+    }
+
+    textarea {
+        min-height: 110px;
+    }
+
+    .example-list {
+        flex-direction: column;
+    }
+
+    .example-question {
+        width: 100%;
+    }
+}
