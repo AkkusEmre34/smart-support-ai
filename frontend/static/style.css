@@ -23,6 +23,10 @@ textarea {
     font-family: inherit;
 }
 
+button {
+    border: none;
+}
+
 .container {
     width: 100%;
     max-width: 850px;
@@ -145,7 +149,6 @@ textarea::placeholder {
     width: 100%;
     margin-top: 18px;
     padding: 15px;
-    border: none;
     border-radius: 12px;
     cursor: pointer;
     background: #4f46e5;
@@ -366,10 +369,15 @@ textarea::placeholder {
     overflow-wrap: anywhere;
 }
 
-/* KOPYALA BUTONU */
+/* CEVAP İŞLEMLERİ */
+
+.answer-actions {
+    margin-top: 14px;
+}
+
+/* KOPYALAMA BUTONU */
 
 .copy-button {
-    margin-top: 14px;
     padding: 8px 13px;
     border: 1px solid #bbf7d0;
     border-radius: 9px;
@@ -385,6 +393,83 @@ textarea::placeholder {
     border-color: #22c55e;
     background: #dcfce7;
     transform: translateY(-1px);
+}
+
+/* GERİ BİLDİRİM */
+
+.feedback-area {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid #d1fae5;
+}
+
+.feedback-question {
+    display: block;
+    margin-bottom: 10px;
+    color: #475569;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.feedback-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.feedback-buttons form {
+    display: block;
+}
+
+.feedback-button {
+    padding: 8px 12px;
+    border-radius: 9px;
+    cursor: pointer;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.positive-button {
+    border: 1px solid #86efac;
+    color: #166534;
+}
+
+.positive-button:hover {
+    background: #dcfce7;
+    transform: translateY(-1px);
+}
+
+.negative-button {
+    border: 1px solid #fca5a5;
+    color: #b91c1c;
+}
+
+.negative-button:hover {
+    background: #fee2e2;
+    transform: translateY(-1px);
+}
+
+.feedback-result {
+    margin-top: 16px;
+    padding: 11px 13px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 1.5;
+}
+
+.positive-result {
+    border: 1px solid #86efac;
+    background: #dcfce7;
+    color: #166534;
+}
+
+.negative-result {
+    border: 1px solid #fca5a5;
+    background: #fef2f2;
+    color: #b91c1c;
 }
 
 /* KOYU MOD */
@@ -511,6 +596,48 @@ body.dark-mode .copy-button:hover {
     background: #14532d;
 }
 
+body.dark-mode .feedback-area {
+    border-top-color: #166534;
+}
+
+body.dark-mode .feedback-question {
+    color: #cbd5e1;
+}
+
+body.dark-mode .positive-button {
+    border-color: #166534;
+    background: #052e16;
+    color: #bbf7d0;
+}
+
+body.dark-mode .positive-button:hover {
+    border-color: #22c55e;
+    background: #14532d;
+}
+
+body.dark-mode .negative-button {
+    border-color: #991b1b;
+    background: #450a0a;
+    color: #fecaca;
+}
+
+body.dark-mode .negative-button:hover {
+    border-color: #ef4444;
+    background: #7f1d1d;
+}
+
+body.dark-mode .positive-result {
+    border-color: #166534;
+    background: #052e16;
+    color: #bbf7d0;
+}
+
+body.dark-mode .negative-result {
+    border-color: #991b1b;
+    background: #450a0a;
+    color: #fecaca;
+}
+
 body.dark-mode .clear-button {
     border-color: #991b1b;
     background: #450a0a;
@@ -579,6 +706,15 @@ body.dark-mode .clear-button:hover {
     }
 
     .category-question {
+        width: 100%;
+    }
+
+    .feedback-buttons {
+        flex-direction: column;
+    }
+
+    .feedback-buttons form,
+    .feedback-button {
         width: 100%;
     }
 }

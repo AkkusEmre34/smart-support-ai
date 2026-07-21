@@ -153,7 +153,10 @@
 
                     {% for chat in chat_history|reverse %}
 
-                        <article class="chat-item">
+                        <article
+                            class="chat-item"
+                            id="chat-{{ chat.id }}"
+                        >
 
                             <div class="chat-category">
                                 {{ chat.category_name }}
@@ -195,12 +198,82 @@
                                         {{ chat.answer }}
                                     </p>
 
-                                    <button
-                                        type="button"
-                                        class="copy-button"
-                                    >
-                                        📋 Cevabı Kopyala
-                                    </button>
+                                    <div class="answer-actions">
+
+                                        <button
+                                            type="button"
+                                            class="copy-button"
+                                        >
+                                            📋 Cevabı Kopyala
+                                        </button>
+
+                                        {% if not chat.feedback %}
+
+                                            <div class="feedback-area">
+
+                                                <span class="feedback-question">
+                                                    Bu çözüm işe yaradı mı?
+                                                </span>
+
+                                                <div class="feedback-buttons">
+
+                                                    <form
+                                                        method="POST"
+                                                        action="{{ url_for('save_feedback', chat_id=chat.id) }}"
+                                                    >
+                                                        <input
+                                                            type="hidden"
+                                                            name="feedback"
+                                                            value="positive"
+                                                        >
+
+                                                        <button
+                                                            type="submit"
+                                                            class="feedback-button positive-button"
+                                                        >
+                                                            👍 İşe yaradı
+                                                        </button>
+                                                    </form>
+
+                                                    <form
+                                                        method="POST"
+                                                        action="{{ url_for('save_feedback', chat_id=chat.id) }}"
+                                                    >
+                                                        <input
+                                                            type="hidden"
+                                                            name="feedback"
+                                                            value="negative"
+                                                        >
+
+                                                        <button
+                                                            type="submit"
+                                                            class="feedback-button negative-button"
+                                                        >
+                                                            👎 İşe yaramadı
+                                                        </button>
+                                                    </form>
+
+                                                </div>
+
+                                            </div>
+
+                                        {% elif chat.feedback == "positive" %}
+
+                                            <div class="feedback-result positive-result">
+                                                ✅ Teşekkürler! Çözümün işe yaradığını
+                                                kaydettik.
+                                            </div>
+
+                                        {% elif chat.feedback == "negative" %}
+
+                                            <div class="feedback-result negative-result">
+                                                📝 Teşekkürler! Bu çözümü geliştirmek için
+                                                geri bildiriminizi kaydettik.
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
 
                                 </div>
 

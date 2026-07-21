@@ -1,4 +1,5 @@
 from pathlib import Path
+from uuid import uuid4
 
 from flask import Flask, redirect, render_template, request, session, url_for
 
@@ -29,10 +30,28 @@ app = Flask(
 app.secret_key = "smart-support-ai-secret-key"
 
 
+def prepare_chat_history():
+    chat_history = session.get("chat_history", [])
+    history_changed = False
+
+    for chat in chat_history:
+        if "id" not in chat:
+            chat["id"] = str(uuid4())
+            history_changed = True
+
+        if "feedback" not in chat:
+            chat["feedback"] = None
+            history_changed = True
+
+    if history_changed:
+        session["chat_history"] = chat_history
+
+    return chat_history
+
+
 @app.route("/", methods=["GET", "POST"])
 def home():
-    if "chat_history" not in session:
-        session["chat_history"] = []
+    chat_history = prepare_chat_history()
 
     if request.method == "POST":
         question = request.form.get("question", "").strip()
@@ -44,14 +63,14 @@ def home():
         if question:
             answer = find_answer(question, category)
 
-            chat_history = session["chat_history"]
-
             chat_history.append(
                 {
+                    "id": str(uuid4()),
                     "question": question,
                     "answer": answer,
                     "category": category,
-                    "category_name": CATEGORIES[category]
+                    "category_name": CATEGORIES[category],
+                    "feedback": None
                 }
             )
 
@@ -66,10 +85,29 @@ def home():
 
     return render_template(
         "index.html",
-        chat_history=session["chat_history"],
+        chat_history=chat_history,
         categories=CATEGORIES,
         category_questions=category_questions
     )
+
+
+@app.route("/feedback/<chat_id>", methods=["POST"])
+def save_feedback(chat_id):
+    feedback = request.form.get("feedback", "").strip()
+
+    if feedback not in ["positive", "negative"]:
+        return redirect(url_for("home"))
+
+    chat_history = prepare_chat_history()
+
+    for chat in chat_history:
+        if chat.get("id") == chat_id:
+            chat["feedback"] = feedback
+            break
+
+    session["chat_history"] = chat_history
+
+    return redirect(url_for("home") + f"#chat-{chat_id}")
 
 
 @app.route("/clear-history", methods=["POST"])
@@ -85,4 +123,4 @@ if __name__ == "__main__":
         (TEMPLATE_FOLDER / "index.html").exists()
     )
 
-    app.run(debug=True)
+    app.run(debug=True),
