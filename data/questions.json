@@ -1,0 +1,62 @@
+[
+  {
+    "question": "İnternet bağlantım çalışmıyor",
+    "answer": "Modemi yeniden başlatın, kabloları kontrol edin ve Wi-Fi ayarlarınızı gözden geçirin."
+  },
+  {
+    "question": "Bilgisayar açılmıyor",
+    "answer": "Güç kablosunu, adaptörü ve güç düğmesini kontrol edin."
+  },
+  {
+    "question": "Şifremi unuttum",
+    "answer": "Şifre sıfırlama ekranını kullanarak yeni bir şifre oluşturun."
+  },
+  {
+    "question": "Yazıcı çalışmıyor",
+    "answer": "Yazıcının açık olduğundan, USB veya ağ bağlantısının doğru olduğundan emin olun."
+  },
+  {
+    "question": "Bilgisayar çok yavaş",
+    "answer": "Gereksiz programları kapatın, başlangıç uygulamalarını azaltın ve disk kullanımını kontrol edin."
+  },
+  {
+    "question": "Mavi ekran hatası alıyorum",
+    "answer": "Sürücüleri güncelleyin ve son yüklenen programları kontrol edin."
+  },
+  {
+    "question": "Fare çalışmıyor",
+    "answer": "USB bağlantısını çıkarıp tekrar takın veya pili değiştirin."
+  },
+  {
+    "question": "Klavye çalışmıyor",
+    "answer": "Bağlantıyı kontrol edin ve farklı bir USB girişinde deneyin."
+  },
+  {
+    "question": "Ses gelmiyor",
+    "answer": "Ses seviyesini, hoparlör bağlantısını ve ses sürücülerini kontrol edin."
+  },
+  {
+    "question": "Mikrofon çalışmıyor",
+    "answer": "Mikrofon izinlerini ve giriş aygıtı ayarlarını kontrol edin."
+  },
+  {
+    "question": "Ekran siyah kaldı",
+    "answer": "Monitör bağlantısını kontrol edin ve bilgisayarı yeniden başlatın."
+  },
+  {
+    "question": "USB bellek görünmüyor",
+    "answer": "Farklı bir USB portunda deneyin ve Disk Yönetimi'nden kontrol edin."
+  },
+  {
+    "question": "Wi-Fi bağlanmıyor",
+    "answer": "Kablosuz ağı unutup yeniden bağlanmayı deneyin."
+  },
+  {
+    "question": "Bluetooth çalışmıyor",
+    "answer": "Bluetooth'u kapatıp açın ve sürücüyü güncelleyin."
+  },
+  {
+    "question": "Program açılmıyor",
+    "answer": "Programı yönetici olarak çalıştırmayı veya yeniden yüklemeyi deneyin."
+  }
+]
