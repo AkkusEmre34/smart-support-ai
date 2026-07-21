@@ -26,7 +26,8 @@
             <h1>Smart Support AI</h1>
 
             <p>
-                Teknik sorununuzu yazın, sistem size uygun çözüm önerisini sunsun.
+                Teknik sorununuzu yazın, sistem size uygun
+                çözüm önerisini sunsun.
             </p>
         </section>
 
@@ -43,7 +44,7 @@
                     name="question"
                     placeholder="Örnek: Bilgisayarım Wi-Fi ağına bağlanmıyor."
                     required
-                >{{ question }}</textarea>
+                ></textarea>
 
                 <button type="submit" class="solution-button">
                     Çözüm Bul
@@ -59,33 +60,73 @@
 
             </form>
 
-            {% if answer %}
+        </section>
 
-                <div class="answer-box">
+        {% if chat_history %}
 
-                    <div class="answer-title">
-                        <span>✅</span>
+            <section class="history-section">
 
-                        <h2>
-                            Önerilen Çözüm
-                        </h2>
-                    </div>
+                <div class="history-header">
+                    <h2>Sohbet Geçmişi</h2>
 
-                    <p>
-                        {{ answer }}
-                    </p>
+                    <form
+                        method="POST"
+                        action="{{ url_for('clear_history') }}"
+                    >
+                        <button
+                            type="submit"
+                            class="clear-button"
+                        >
+                            Geçmişi Temizle
+                        </button>
+                    </form>
+                </div>
+
+                <div class="chat-list">
+
+                    {% for chat in chat_history %}
+
+                        <article class="chat-item">
+
+                            <div class="message user-message">
+
+                                <div class="message-icon">
+                                    👤
+                                </div>
+
+                                <div class="message-content">
+                                    <h3>Siz</h3>
+                                    <p>{{ chat.question }}</p>
+                                </div>
+
+                            </div>
+
+                            <div class="message bot-message">
+
+                                <div class="message-icon">
+                                    🤖
+                                </div>
+
+                                <div class="message-content">
+                                    <h3>Smart Support AI</h3>
+                                    <p>{{ chat.answer }}</p>
+                                </div>
+
+                            </div>
+
+                        </article>
+
+                    {% endfor %}
 
                 </div>
 
-            {% endif %}
+            </section>
 
-        </section>
+        {% endif %}
 
         <section class="examples">
 
-            <h2>
-                Örnek Sorular
-            </h2>
+            <h2>Örnek Sorular</h2>
 
             <p class="example-description">
                 Bir soruya tıklayarak soru kutusuna ekleyebilirsiniz.
