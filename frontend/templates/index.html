@@ -29,6 +29,8 @@
 
     <main class="container">
 
+        <!-- BAŞLIK -->
+
         <section class="header">
 
             <div class="logo">
@@ -46,9 +48,169 @@
 
         </section>
 
+        <!-- İSTATİSTİK PANELİ -->
+
+        <section class="statistics-section">
+
+            <div class="statistics-header">
+
+                <h2>
+                    📊 Sistem İstatistikleri
+                </h2>
+
+                <p>
+                    Soruların ve kullanıcı geri bildirimlerinin özeti
+                </p>
+
+            </div>
+
+            <div class="statistics-grid">
+
+                <article class="stat-card">
+
+                    <div class="stat-icon">
+                        💬
+                    </div>
+
+                    <div class="stat-content">
+
+                        <span class="stat-title">
+                            Toplam Soru
+                        </span>
+
+                        <strong class="stat-number">
+                            {{ statistics.total_questions }}
+                        </strong>
+
+                    </div>
+
+                </article>
+
+                <article class="stat-card positive-stat">
+
+                    <div class="stat-icon">
+                        👍
+                    </div>
+
+                    <div class="stat-content">
+
+                        <span class="stat-title">
+                            Olumlu
+                        </span>
+
+                        <strong class="stat-number">
+                            {{ statistics.positive_feedback }}
+                        </strong>
+
+                    </div>
+
+                </article>
+
+                <article class="stat-card negative-stat">
+
+                    <div class="stat-icon">
+                        👎
+                    </div>
+
+                    <div class="stat-content">
+
+                        <span class="stat-title">
+                            Olumsuz
+                        </span>
+
+                        <strong class="stat-number">
+                            {{ statistics.negative_feedback }}
+                        </strong>
+
+                    </div>
+
+                </article>
+
+                <article class="stat-card waiting-stat">
+
+                    <div class="stat-icon">
+                        ⏳
+                    </div>
+
+                    <div class="stat-content">
+
+                        <span class="stat-title">
+                            Değerlendirilmedi
+                        </span>
+
+                        <strong class="stat-number">
+                            {{ statistics.unanswered_feedback }}
+                        </strong>
+
+                    </div>
+
+                </article>
+
+                <article class="stat-card popular-stat">
+
+                    <div class="stat-icon">
+                        ⭐
+                    </div>
+
+                    <div class="stat-content">
+
+                        <span class="stat-title">
+                            En Çok Sorulan Kategori
+                        </span>
+
+                        <strong class="popular-category">
+                            {{ statistics.most_used_category_name }}
+                        </strong>
+
+                        <small>
+                            {{ statistics.most_used_category_count }} soru
+                        </small>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+            <details class="category-details">
+
+                <summary>
+                    Kategori dağılımını göster
+                </summary>
+
+                <div class="category-stat-list">
+
+                    {% for category in statistics.category_statistics %}
+
+                        <div class="category-stat-row">
+
+                            <span>
+                                {{ category.name }}
+                            </span>
+
+                            <strong>
+                                {{ category.count }}
+                            </strong>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </details>
+
+        </section>
+
+        <!-- SORU FORMU -->
+
         <section class="support-card">
 
-            <form method="POST" id="support-form">
+            <form
+                method="POST"
+                action="{{ url_for('home') }}"
+                id="support-form"
+            >
 
                 <label for="category">
                     Sorun kategorisi
@@ -59,6 +221,7 @@
                     name="category"
                     required
                 >
+
                     <option value="" selected disabled>
                         Bir kategori seçin
                     </option>
@@ -70,12 +233,14 @@
                         </option>
 
                     {% endfor %}
+
                 </select>
 
                 <div
                     id="category-example-box"
                     class="category-example-box"
                 >
+
                     <h3>
                         Bu kategorideki örnek sorunlar
                     </h3>
@@ -84,9 +249,13 @@
                         id="category-example-list"
                         class="category-example-list"
                     ></div>
+
                 </div>
 
-                <label for="question" class="question-label">
+                <label
+                    for="question"
+                    class="question-label"
+                >
                     Teknik sorununuz
                 </label>
 
@@ -108,16 +277,20 @@
                     id="loading-box"
                     class="loading-box"
                 >
+
                     <div class="spinner"></div>
 
                     <p>
                         Sorunuz analiz ediliyor...
                     </p>
+
                 </div>
 
             </form>
 
         </section>
+
+        <!-- SOHBET GEÇMİŞİ -->
 
         {% if chat_history %}
 
@@ -126,6 +299,7 @@
                 <div class="history-header">
 
                     <div>
+
                         <h2>
                             Sohbet Geçmişi
                         </h2>
@@ -133,18 +307,21 @@
                         <p>
                             Daha önce sorduğunuz teknik sorular
                         </p>
+
                     </div>
 
                     <form
                         method="POST"
                         action="{{ url_for('clear_history') }}"
                     >
+
                         <button
                             type="submit"
                             class="clear-button"
                         >
                             Geçmişi Temizle
                         </button>
+
                     </form>
 
                 </div>
@@ -153,11 +330,16 @@
 
                     {% for chat in chat_history|reverse %}
 
-                        <article class="chat-item">
+                        <article
+                            class="chat-item"
+                            id="chat-{{ chat.id }}"
+                        >
 
                             <div class="chat-category">
                                 {{ chat.category_name }}
                             </div>
+
+                            <!-- KULLANICI MESAJI -->
 
                             <div class="message user-message">
 
@@ -179,6 +361,8 @@
 
                             </div>
 
+                            <!-- YAPAY ZEKÂ CEVABI -->
+
                             <div class="message bot-message">
 
                                 <div class="message-icon">
@@ -195,12 +379,97 @@
                                         {{ chat.answer }}
                                     </p>
 
-                                    <button
-                                        type="button"
-                                        class="copy-button"
-                                    >
-                                        📋 Cevabı Kopyala
-                                    </button>
+                                    <div class="answer-actions">
+
+                                        <button
+                                            type="button"
+                                            class="copy-button"
+                                        >
+                                            📋 Cevabı Kopyala
+                                        </button>
+
+                                        <!-- GERİ BİLDİRİM YAPILMADIYSA -->
+
+                                        {% if not chat.feedback %}
+
+                                            <div class="feedback-area">
+
+                                                <span class="feedback-question">
+                                                    Bu çözüm işe yaradı mı?
+                                                </span>
+
+                                                <div class="feedback-buttons">
+
+                                                    <form
+                                                        method="POST"
+                                                        action="{{ url_for('save_feedback', chat_id=chat.id) }}"
+                                                    >
+
+                                                        <input
+                                                            type="hidden"
+                                                            name="feedback"
+                                                            value="positive"
+                                                        >
+
+                                                        <button
+                                                            type="submit"
+                                                            class="feedback-button positive-button"
+                                                        >
+                                                            👍 İşe yaradı
+                                                        </button>
+
+                                                    </form>
+
+                                                    <form
+                                                        method="POST"
+                                                        action="{{ url_for('save_feedback', chat_id=chat.id) }}"
+                                                    >
+
+                                                        <input
+                                                            type="hidden"
+                                                            name="feedback"
+                                                            value="negative"
+                                                        >
+
+                                                        <button
+                                                            type="submit"
+                                                            class="feedback-button negative-button"
+                                                        >
+                                                            👎 İşe yaramadı
+                                                        </button>
+
+                                                    </form>
+
+                                                </div>
+
+                                            </div>
+
+                                        <!-- OLUMLU GERİ BİLDİRİM -->
+
+                                        {% elif chat.feedback == "positive" %}
+
+                                            <div class="feedback-result positive-result">
+
+                                                ✅ Teşekkürler! Çözümün işe
+                                                yaradığını kaydettik.
+
+                                            </div>
+
+                                        <!-- OLUMSUZ GERİ BİLDİRİM -->
+
+                                        {% elif chat.feedback == "negative" %}
+
+                                            <div class="feedback-result negative-result">
+
+                                                📝 Teşekkürler! Bu çözümü
+                                                geliştirmek için geri bildiriminizi
+                                                kaydettik.
+
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
 
                                 </div>
 
@@ -247,6 +516,8 @@
             {{ category_questions | tojson }};
 
 
+        /* KATEGORİYE GÖRE ÖRNEK SORULAR */
+
         function showCategoryQuestions(category) {
             categoryExampleList.innerHTML = "";
 
@@ -259,19 +530,28 @@
             }
 
             questions.forEach(function (question) {
-                const button =
+                const questionButton =
                     document.createElement("button");
 
-                button.type = "button";
-                button.className = "category-question";
-                button.textContent = question;
+                questionButton.type = "button";
 
-                button.addEventListener("click", function () {
-                    questionBox.value = question;
-                    questionBox.focus();
-                });
+                questionButton.className =
+                    "category-question";
 
-                categoryExampleList.appendChild(button);
+                questionButton.textContent =
+                    question;
+
+                questionButton.addEventListener(
+                    "click",
+                    function () {
+                        questionBox.value = question;
+                        questionBox.focus();
+                    }
+                );
+
+                categoryExampleList.appendChild(
+                    questionButton
+                );
             });
 
             categoryExampleBox.style.display = "block";
@@ -293,12 +573,17 @@
         });
 
 
+        /* YÜKLENME ANİMASYONU */
+
         supportForm.addEventListener("submit", function (event) {
             event.preventDefault();
 
             loadingBox.style.display = "flex";
+
             solutionButton.disabled = true;
-            solutionButton.textContent = "Analiz ediliyor...";
+
+            solutionButton.textContent =
+                "Analiz ediliyor...";
 
             setTimeout(function () {
                 supportForm.submit();
@@ -306,57 +591,78 @@
         });
 
 
+        /* CEVABI KOPYALAMA */
+
         const copyButtons =
             document.querySelectorAll(".copy-button");
 
         copyButtons.forEach(function (button) {
-            button.addEventListener("click", async function () {
-                const messageContent =
-                    button.closest(".message-content");
+            button.addEventListener(
+                "click",
+                async function () {
+                    const messageContent =
+                        button.closest(".message-content");
 
-                const answerText =
-                    messageContent.querySelector(".answer-text");
+                    const answerText =
+                        messageContent.querySelector(
+                            ".answer-text"
+                        );
 
-                try {
-                    await navigator.clipboard.writeText(
-                        answerText.textContent.trim()
-                    );
+                    try {
+                        await navigator.clipboard.writeText(
+                            answerText.textContent.trim()
+                        );
 
-                    button.textContent = "✅ Kopyalandı";
+                        button.textContent =
+                            "✅ Kopyalandı";
 
-                    setTimeout(function () {
-                        button.textContent = "📋 Cevabı Kopyala";
-                    }, 1800);
+                        setTimeout(function () {
+                            button.textContent =
+                                "📋 Cevabı Kopyala";
+                        }, 1800);
 
-                } catch (error) {
-                    button.textContent = "Kopyalanamadı";
+                    } catch (error) {
+                        button.textContent =
+                            "Kopyalanamadı";
 
-                    setTimeout(function () {
-                        button.textContent = "📋 Cevabı Kopyala";
-                    }, 1800);
+                        setTimeout(function () {
+                            button.textContent =
+                                "📋 Cevabı Kopyala";
+                        }, 1800);
+                    }
                 }
-            });
+            );
         });
 
 
+        /* KOYU MOD */
+
         function updateThemeButton() {
             const darkModeActive =
-                document.body.classList.contains("dark-mode");
+                document.body.classList.contains(
+                    "dark-mode"
+                );
 
             if (darkModeActive) {
-                themeButton.textContent = "☀️ Açık Mod";
+                themeButton.textContent =
+                    "☀️ Açık Mod";
             } else {
-                themeButton.textContent = "🌙 Koyu Mod";
+                themeButton.textContent =
+                    "🌙 Koyu Mod";
             }
         }
 
 
         function loadSavedTheme() {
             const savedTheme =
-                localStorage.getItem("smartSupportTheme");
+                localStorage.getItem(
+                    "smartSupportTheme"
+                );
 
             if (savedTheme === "dark") {
-                document.body.classList.add("dark-mode");
+                document.body.classList.add(
+                    "dark-mode"
+                );
             }
 
             updateThemeButton();
@@ -364,10 +670,14 @@
 
 
         themeButton.addEventListener("click", function () {
-            document.body.classList.toggle("dark-mode");
+            document.body.classList.toggle(
+                "dark-mode"
+            );
 
             const darkModeActive =
-                document.body.classList.contains("dark-mode");
+                document.body.classList.contains(
+                    "dark-mode"
+                );
 
             if (darkModeActive) {
                 localStorage.setItem(

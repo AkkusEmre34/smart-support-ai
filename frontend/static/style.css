@@ -23,6 +23,10 @@ textarea {
     font-family: inherit;
 }
 
+button {
+    border: none;
+}
+
 .container {
     width: 100%;
     max-width: 850px;
@@ -78,6 +82,155 @@ textarea {
     color: #64748b;
     font-size: 17px;
     line-height: 1.6;
+}
+
+/* İSTATİSTİK PANELİ */
+
+.statistics-section {
+    margin-bottom: 30px;
+    padding: 28px;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 15px 40px rgba(15, 23, 42, 0.08);
+}
+
+.statistics-header {
+    margin-bottom: 20px;
+}
+
+.statistics-header h2 {
+    margin-bottom: 6px;
+    color: #172554;
+    font-size: 23px;
+}
+
+.statistics-header p {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.statistics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 105px;
+    padding: 17px;
+    border: 1px solid #c7d2fe;
+    border-radius: 15px;
+    background: #eef2ff;
+}
+
+.stat-icon {
+    flex-shrink: 0;
+    font-size: 28px;
+}
+
+.stat-content {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.stat-title {
+    margin-bottom: 5px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.stat-number {
+    color: #312e81;
+    font-size: 28px;
+}
+
+.positive-stat {
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+}
+
+.positive-stat .stat-number {
+    color: #166534;
+}
+
+.negative-stat {
+    border-color: #fecaca;
+    background: #fef2f2;
+}
+
+.negative-stat .stat-number {
+    color: #b91c1c;
+}
+
+.waiting-stat {
+    border-color: #fde68a;
+    background: #fffbeb;
+}
+
+.waiting-stat .stat-number {
+    color: #a16207;
+}
+
+.popular-stat {
+    grid-column: span 4;
+    min-height: 90px;
+    border-color: #ddd6fe;
+    background: #f5f3ff;
+}
+
+.popular-category {
+    color: #6d28d9;
+    font-size: 18px;
+}
+
+.popular-stat small {
+    margin-top: 4px;
+    color: #7c3aed;
+}
+
+.category-details {
+    margin-top: 18px;
+    border: 1px solid #e2e8f0;
+    border-radius: 13px;
+    background: #f8fafc;
+}
+
+.category-details summary {
+    padding: 14px 16px;
+    cursor: pointer;
+    color: #4338ca;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.category-stat-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 0 16px 16px;
+}
+
+.category-stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 13px;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #475569;
+    font-size: 13px;
+}
+
+.category-stat-row strong {
+    color: #4338ca;
+    font-size: 15px;
 }
 
 /* SORU KARTI */
@@ -145,7 +298,6 @@ textarea::placeholder {
     width: 100%;
     margin-top: 18px;
     padding: 15px;
-    border: none;
     border-radius: 12px;
     cursor: pointer;
     background: #4f46e5;
@@ -366,11 +518,16 @@ textarea::placeholder {
     overflow-wrap: anywhere;
 }
 
-/* KOPYALA BUTONU */
+/* CEVAP İŞLEMLERİ */
+
+.answer-actions {
+    margin-top: 14px;
+}
+
+/* KOPYALAMA BUTONU */
 
 .copy-button {
-    margin-top: 14px;
-    padding: 8px 13px;
+    padding: 9px 14px;
     border: 1px solid #bbf7d0;
     border-radius: 9px;
     cursor: pointer;
@@ -385,6 +542,88 @@ textarea::placeholder {
     border-color: #22c55e;
     background: #dcfce7;
     transform: translateY(-1px);
+}
+
+/* GERİ BİLDİRİM */
+
+.feedback-area {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid #d1fae5;
+}
+
+.feedback-question {
+    display: block;
+    margin-bottom: 10px;
+    color: #475569;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.feedback-buttons {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.feedback-buttons form {
+    display: block;
+    margin: 0;
+}
+
+.feedback-button {
+    min-width: 125px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    background: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    transition: 0.2s;
+}
+
+.positive-button {
+    border: 1px solid #86efac;
+    background: #f0fdf4;
+    color: #166534;
+}
+
+.positive-button:hover {
+    background: #dcfce7;
+    transform: translateY(-1px);
+}
+
+.negative-button {
+    border: 1px solid #fca5a5;
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.negative-button:hover {
+    background: #fee2e2;
+    transform: translateY(-1px);
+}
+
+.feedback-result {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.positive-result {
+    border: 1px solid #86efac;
+    background: #dcfce7;
+    color: #166534;
+}
+
+.negative-result {
+    border: 1px solid #fca5a5;
+    background: #fef2f2;
+    color: #b91c1c;
 }
 
 /* KOYU MOD */
@@ -406,20 +645,91 @@ body.dark-mode .theme-button:hover {
 }
 
 body.dark-mode .header h1,
+body.dark-mode .statistics-header h2,
 body.dark-mode .history-header h2 {
     color: #f8fafc;
 }
 
 body.dark-mode .header p,
+body.dark-mode .statistics-header p,
 body.dark-mode .history-header p {
     color: #94a3b8;
 }
 
+body.dark-mode .statistics-section,
 body.dark-mode .support-card,
 body.dark-mode .history-section {
     border-color: #334155;
     background: #111827;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .stat-card {
+    border-color: #3730a3;
+    background: #1e1b4b;
+}
+
+body.dark-mode .stat-title {
+    color: #cbd5e1;
+}
+
+body.dark-mode .stat-number {
+    color: #c7d2fe;
+}
+
+body.dark-mode .positive-stat {
+    border-color: #166534;
+    background: #052e16;
+}
+
+body.dark-mode .positive-stat .stat-number {
+    color: #bbf7d0;
+}
+
+body.dark-mode .negative-stat {
+    border-color: #991b1b;
+    background: #450a0a;
+}
+
+body.dark-mode .negative-stat .stat-number {
+    color: #fecaca;
+}
+
+body.dark-mode .waiting-stat {
+    border-color: #854d0e;
+    background: #422006;
+}
+
+body.dark-mode .waiting-stat .stat-number {
+    color: #fde68a;
+}
+
+body.dark-mode .popular-stat {
+    border-color: #6d28d9;
+    background: #2e1065;
+}
+
+body.dark-mode .popular-category,
+body.dark-mode .popular-stat small {
+    color: #ddd6fe;
+}
+
+body.dark-mode .category-details {
+    border-color: #334155;
+    background: #0f172a;
+}
+
+body.dark-mode .category-details summary {
+    color: #c7d2fe;
+}
+
+body.dark-mode .category-stat-row {
+    background: #1e293b;
+    color: #cbd5e1;
+}
+
+body.dark-mode .category-stat-row strong {
+    color: #c7d2fe;
 }
 
 body.dark-mode label {
@@ -511,6 +821,46 @@ body.dark-mode .copy-button:hover {
     background: #14532d;
 }
 
+body.dark-mode .feedback-area {
+    border-top-color: #166534;
+}
+
+body.dark-mode .feedback-question {
+    color: #e2e8f0;
+}
+
+body.dark-mode .positive-button {
+    border-color: #4ade80;
+    background: #14532d;
+    color: #dcfce7;
+}
+
+body.dark-mode .positive-button:hover {
+    background: #166534;
+}
+
+body.dark-mode .negative-button {
+    border-color: #f87171;
+    background: #7f1d1d;
+    color: #fee2e2;
+}
+
+body.dark-mode .negative-button:hover {
+    background: #991b1b;
+}
+
+body.dark-mode .positive-result {
+    border-color: #4ade80;
+    background: #14532d;
+    color: #dcfce7;
+}
+
+body.dark-mode .negative-result {
+    border-color: #f87171;
+    background: #7f1d1d;
+    color: #fee2e2;
+}
+
 body.dark-mode .clear-button {
     border-color: #991b1b;
     background: #450a0a;
@@ -519,6 +869,18 @@ body.dark-mode .clear-button {
 
 body.dark-mode .clear-button:hover {
     background: #7f1d1d;
+}
+
+/* TABLET */
+
+@media screen and (max-width: 750px) {
+    .statistics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .popular-stat {
+        grid-column: span 2;
+    }
 }
 
 /* MOBİL */
@@ -546,9 +908,22 @@ body.dark-mode .clear-button:hover {
         font-size: 15px;
     }
 
+    .statistics-section,
     .support-card,
     .history-section {
         padding: 22px;
+    }
+
+    .statistics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .popular-stat {
+        grid-column: span 1;
+    }
+
+    .category-stat-list {
+        grid-template-columns: 1fr;
     }
 
     .history-header {
@@ -579,6 +954,16 @@ body.dark-mode .clear-button:hover {
     }
 
     .category-question {
+        width: 100%;
+    }
+
+    .feedback-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .feedback-buttons form,
+    .feedback-button {
         width: 100%;
     }
 }
