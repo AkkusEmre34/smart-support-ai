@@ -9,6 +9,17 @@ PROJECT_FOLDER = Path(__file__).resolve().parent.parent
 TEMPLATE_FOLDER = PROJECT_FOLDER / "frontend" / "templates"
 STATIC_FOLDER = PROJECT_FOLDER / "frontend" / "static"
 
+CATEGORIES = {
+    "internet": "🌐 İnternet",
+    "ses": "🔊 Ses",
+    "yazici": "🖨️ Yazıcı",
+    "mikrofon": "🎤 Mikrofon",
+    "donanim": "🖥️ Donanım",
+    "usb": "🔌 USB",
+    "kamera": "📷 Kamera",
+    "diger": "🛠️ Diğer"
+}
+
 app = Flask(
     __name__,
     template_folder=str(TEMPLATE_FOLDER),
@@ -25,6 +36,10 @@ def home():
 
     if request.method == "POST":
         question = request.form.get("question", "").strip()
+        category = request.form.get("category", "").strip()
+
+        if category not in CATEGORIES:
+            category = "diger"
 
         if question:
             answer = find_answer(question)
@@ -34,7 +49,9 @@ def home():
             chat_history.append(
                 {
                     "question": question,
-                    "answer": answer
+                    "answer": answer,
+                    "category": category,
+                    "category_name": CATEGORIES[category]
                 }
             )
 
@@ -44,7 +61,8 @@ def home():
 
     return render_template(
         "index.html",
-        chat_history=session["chat_history"]
+        chat_history=session["chat_history"],
+        categories=CATEGORIES
     )
 
 

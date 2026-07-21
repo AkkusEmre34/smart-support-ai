@@ -26,8 +26,8 @@
             <h1>Smart Support AI</h1>
 
             <p>
-                Teknik sorununuzu yazın, sistem size uygun
-                çözüm önerisini sunsun.
+                Sorununuzun kategorisini seçin ve teknik probleminizi yazın.
+                Sistem size uygun çözüm önerisini sunsun.
             </p>
         </section>
 
@@ -35,7 +35,29 @@
 
             <form method="POST" id="support-form">
 
-                <label for="question">
+                <label for="category">
+                    Sorun kategorisi
+                </label>
+
+                <select
+                    id="category"
+                    name="category"
+                    required
+                >
+                    <option value="" selected disabled>
+                        Bir kategori seçin
+                    </option>
+
+                    {% for category_key, category_name in categories.items() %}
+
+                        <option value="{{ category_key }}">
+                            {{ category_name }}
+                        </option>
+
+                    {% endfor %}
+                </select>
+
+                <label for="question" class="question-label">
                     Teknik sorununuz
                 </label>
 
@@ -51,11 +73,13 @@
                 </button>
 
                 <div id="loading-box" class="loading-box">
+
                     <div class="spinner"></div>
 
                     <p>
                         Sorunuz analiz ediliyor...
                     </p>
+
                 </div>
 
             </form>
@@ -67,7 +91,14 @@
             <section class="history-section">
 
                 <div class="history-header">
-                    <h2>Sohbet Geçmişi</h2>
+
+                    <div>
+                        <h2>Sohbet Geçmişi</h2>
+
+                        <p>
+                            Daha önce sorduğunuz teknik sorular
+                        </p>
+                    </div>
 
                     <form
                         method="POST"
@@ -80,13 +111,18 @@
                             Geçmişi Temizle
                         </button>
                     </form>
+
                 </div>
 
                 <div class="chat-list">
 
-                    {% for chat in chat_history %}
+                    {% for chat in chat_history|reverse %}
 
                         <article class="chat-item">
+
+                            <div class="chat-category">
+                                {{ chat.category_name }}
+                            </div>
 
                             <div class="message user-message">
 
@@ -95,8 +131,13 @@
                                 </div>
 
                                 <div class="message-content">
+
                                     <h3>Siz</h3>
-                                    <p>{{ chat.question }}</p>
+
+                                    <p>
+                                        {{ chat.question }}
+                                    </p>
+
                                 </div>
 
                             </div>
@@ -108,8 +149,13 @@
                                 </div>
 
                                 <div class="message-content">
+
                                     <h3>Smart Support AI</h3>
-                                    <p>{{ chat.answer }}</p>
+
+                                    <p>
+                                        {{ chat.answer }}
+                                    </p>
+
                                 </div>
 
                             </div>
@@ -129,25 +175,57 @@
             <h2>Örnek Sorular</h2>
 
             <p class="example-description">
-                Bir soruya tıklayarak soru kutusuna ekleyebilirsiniz.
+                Bir soruya tıkladığınızda kategori ve soru otomatik seçilir.
             </p>
 
             <div class="example-list">
 
-                <button type="button" class="example-question">
+                <button
+                    type="button"
+                    class="example-question"
+                    data-category="internet"
+                >
                     Wi-Fi bağlantım kesiliyor
                 </button>
 
-                <button type="button" class="example-question">
+                <button
+                    type="button"
+                    class="example-question"
+                    data-category="ses"
+                >
                     Bilgisayardan ses gelmiyor
                 </button>
 
-                <button type="button" class="example-question">
+                <button
+                    type="button"
+                    class="example-question"
+                    data-category="yazici"
+                >
                     Yazıcı çıktı vermiyor
                 </button>
 
-                <button type="button" class="example-question">
+                <button
+                    type="button"
+                    class="example-question"
+                    data-category="mikrofon"
+                >
                     Mikrofonum çalışmıyor
+                </button>
+
+                <button
+                    type="button"
+                    class="example-question"
+                    data-category="kamera"
+                >
+                    Kameram açılmıyor
+                </button>
+
+                <button
+                    type="button"
+                    class="example-question"
+                    data-category="usb"
+                >
+                    USB cihazım algılanmıyor
                 </button>
 
             </div>
@@ -159,6 +237,9 @@
     <script>
         const questionBox =
             document.getElementById("question");
+
+        const categoryBox =
+            document.getElementById("category");
 
         const exampleQuestions =
             document.querySelectorAll(".example-question");
@@ -175,7 +256,15 @@
 
         exampleQuestions.forEach(function (button) {
             button.addEventListener("click", function () {
-                questionBox.value = button.textContent.trim();
+                const selectedCategory =
+                    button.dataset.category;
+
+                questionBox.value =
+                    button.textContent.trim();
+
+                categoryBox.value =
+                    selectedCategory;
+
                 questionBox.focus();
 
                 window.scrollTo({
