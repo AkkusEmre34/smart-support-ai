@@ -145,13 +145,16 @@
         });
 
 
-        supportForm.addEventListener("submit", function () {
+        supportForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+
             loadingBox.style.display = "flex";
-
             solutionButton.disabled = true;
+            solutionButton.textContent = "Analiz ediliyor...";
 
-            solutionButton.textContent =
-                "Analiz ediliyor...";
+            setTimeout(function () {
+                supportForm.submit();
+            }, 1200);
         });
     </script>
 
