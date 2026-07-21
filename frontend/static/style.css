@@ -230,3 +230,25 @@ textarea:focus {
         width: 100%;
     }
 }
+.copy-button {
+    margin-top: 14px;
+    padding: 8px 13px;
+    border: 1px solid #bbf7d0;
+    border-radius: 9px;
+    cursor: pointer;
+    background: #ffffff;
+    color: #166534;
+    font-size: 13px;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.copy-button:hover {
+    border-color: #22c55e;
+    background: #dcfce7;
+    transform: translateY(-1px);
+}
+
+.copy-button:active {
+    transform: translateY(0);
+}
