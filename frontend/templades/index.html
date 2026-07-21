@@ -1,1 +1,39 @@
-<h1>Smart Support AI</h1>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Support AI</title>
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+<body>
+    <main class="container">
+        <h1>Smart Support AI</h1>
+        <p class="subtitle">
+            Teknik sorununuzu yazın, sistem size uygun çözümü önersin.
+        </p>
+
+        <form method="POST">
+            <input
+                type="text"
+                name="question"
+                placeholder="Örnek: Wi-Fi bağlantım kesiliyor"
+                value="{{ question }}"
+                required
+            >
+
+            <button type="submit">Çözüm Bul</button>
+        </form>
+
+        {% if answer %}
+            <section class="answer-box">
+                <h2>Önerilen Çözüm</h2>
+                <p>{{ answer }}</p>
+            </section>
+        {% endif %}
+    </main>
+</body>
+</html>
