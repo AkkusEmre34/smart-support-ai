@@ -1,62 +1,102 @@
 [
   {
     "question": "İnternet bağlantım çalışmıyor",
+    "keywords": ["internet", "wifi", "modem", "bağlantı", "ağ", "kesiliyor"],
     "answer": "Modemi yeniden başlatın, kabloları kontrol edin ve Wi-Fi ayarlarınızı gözden geçirin."
   },
   {
     "question": "Bilgisayar açılmıyor",
-    "answer": "Güç kablosunu, adaptörü ve güç düğmesini kontrol edin."
+    "keywords": ["bilgisayar", "açılmıyor", "güç", "adaptör", "batarya", "ekran"],
+    "answer": "Güç kablosunu, adaptörü, bataryayı ve güç düğmesini kontrol edin."
   },
   {
     "question": "Şifremi unuttum",
+    "keywords": ["şifre", "parola", "unuttum", "giriş", "hesap"],
     "answer": "Şifre sıfırlama ekranını kullanarak yeni bir şifre oluşturun."
   },
   {
     "question": "Yazıcı çalışmıyor",
+    "keywords": ["yazıcı", "printer", "yazdırma", "belge", "çalışmıyor", "usb"],
     "answer": "Yazıcının açık olduğundan, USB veya ağ bağlantısının doğru olduğundan emin olun."
   },
   {
     "question": "Bilgisayar çok yavaş",
+    "keywords": ["bilgisayar", "yavaş", "kasıyor", "donuyor", "performans", "ram"],
     "answer": "Gereksiz programları kapatın, başlangıç uygulamalarını azaltın ve disk kullanımını kontrol edin."
   },
   {
     "question": "Mavi ekran hatası alıyorum",
-    "answer": "Sürücüleri güncelleyin ve son yüklenen programları kontrol edin."
+    "keywords": ["mavi", "ekran", "hata", "çöküyor", "yeniden", "başlıyor"],
+    "answer": "Sürücüleri güncelleyin, hata kodunu not alın ve son yüklenen programları kontrol edin."
   },
   {
     "question": "Fare çalışmıyor",
-    "answer": "USB bağlantısını çıkarıp tekrar takın veya pili değiştirin."
+    "keywords": ["fare", "mouse", "imleç", "usb", "pil", "çalışmıyor"],
+    "answer": "USB bağlantısını çıkarıp tekrar takın, farklı bir porta bağlayın veya pili değiştirin."
   },
   {
     "question": "Klavye çalışmıyor",
-    "answer": "Bağlantıyı kontrol edin ve farklı bir USB girişinde deneyin."
+    "keywords": ["klavye", "tuş", "yazmıyor", "usb", "çalışmıyor"],
+    "answer": "Klavye bağlantısını kontrol edin ve farklı bir USB girişinde deneyin."
   },
   {
     "question": "Ses gelmiyor",
+    "keywords": ["ses", "hoparlör", "kulaklık", "çıkmıyor", "alamıyorum", "mikser"],
     "answer": "Ses seviyesini, hoparlör bağlantısını ve ses sürücülerini kontrol edin."
   },
   {
     "question": "Mikrofon çalışmıyor",
-    "answer": "Mikrofon izinlerini ve giriş aygıtı ayarlarını kontrol edin."
+    "keywords": ["mikrofon", "ses", "konuşma", "izin", "giriş", "çalışmıyor"],
+    "answer": "Mikrofon izinlerini ve varsayılan giriş aygıtı ayarlarını kontrol edin."
   },
   {
     "question": "Ekran siyah kaldı",
-    "answer": "Monitör bağlantısını kontrol edin ve bilgisayarı yeniden başlatın."
+    "keywords": ["ekran", "siyah", "görüntü", "monitör", "açılmıyor"],
+    "answer": "Monitör bağlantısını kontrol edin, parlaklığı artırın ve bilgisayarı yeniden başlatın."
   },
   {
     "question": "USB bellek görünmüyor",
-    "answer": "Farklı bir USB portunda deneyin ve Disk Yönetimi'nden kontrol edin."
+    "keywords": ["usb", "bellek", "flash", "disk", "görünmüyor", "port"],
+    "answer": "USB belleği farklı bir porta takın ve Disk Yönetimi bölümünden kontrol edin."
   },
   {
     "question": "Wi-Fi bağlanmıyor",
-    "answer": "Kablosuz ağı unutup yeniden bağlanmayı deneyin."
+    "keywords": ["wifi", "internet", "kablosuz", "ağ", "bağlanmıyor", "şifre"],
+    "answer": "Kablosuz ağı unutup yeniden bağlanmayı deneyin ve ağ şifresini kontrol edin."
   },
   {
     "question": "Bluetooth çalışmıyor",
-    "answer": "Bluetooth'u kapatıp açın ve sürücüyü güncelleyin."
+    "keywords": ["bluetooth", "kulaklık", "bağlanmıyor", "eşleştirme", "sürücü"],
+    "answer": "Bluetooth'u kapatıp açın, cihazı yeniden eşleştirin ve sürücüyü güncelleyin."
   },
   {
     "question": "Program açılmıyor",
+    "keywords": ["program", "uygulama", "açılmıyor", "hata", "çalışmıyor"],
     "answer": "Programı yönetici olarak çalıştırmayı veya yeniden yüklemeyi deneyin."
+  },
+  {
+    "question": "Kamera çalışmıyor",
+    "keywords": ["kamera", "webcam", "görüntü", "izin", "çalışmıyor"],
+    "answer": "Kamera izinlerini kontrol edin ve başka bir uygulamanın kamerayı kullanmadığından emin olun."
+  },
+  {
+    "question": "Laptop şarj olmuyor",
+    "keywords": ["laptop", "şarj", "batarya", "adaptör", "dolmuyor"],
+    "answer": "Adaptörü, şarj girişini ve batarya durumunu kontrol edin."
+  },
+  {
+    "question": "Bilgisayar çok ısınıyor",
+    "keywords": ["bilgisayar", "ısınıyor", "sıcak", "fan", "termal"],
+    "answer": "Hava kanallarını temizleyin, fanların çalıştığını kontrol edin ve cihazı düz zeminde kullanın."
+  },
+  {
+    "question": "Dosya silinemiyor",
+    "keywords": ["dosya", "silinemiyor", "kullanılıyor", "izin", "erişim"],
+    "answer": "Dosyayı kullanan programları kapatın ve yönetici yetkisiyle tekrar silmeyi deneyin."
+  },
+  {
+    "question": "Disk alanı dolu",
+    "keywords": ["disk", "alan", "dolu", "depolama", "yer", "hafıza"],
+    "answer": "Gereksiz dosyaları silin, geçici dosyaları temizleyin ve büyük dosyaları başka bir diske taşıyın."
   }
 ]
