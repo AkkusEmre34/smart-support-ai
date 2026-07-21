@@ -1,120 +1,127 @@
 import json
+import re
 from pathlib import Path
-from difflib import SequenceMatcher
+from typing import Any
 
 
-GENERIC_WORDS = {
-    "çalışmıyor",
-    "çalışmiyor",
-    "sorun",
-    "hata",
-    "bilgisayar",
-    "cihaz",
-    "olmuyor",
-    "alamıyorum",
-    "alamiyorum"
-}
+PROJECT_FOLDER = Path(__file__).resolve().parent.parent
+DATA_FILE = PROJECT_FOLDER / "data" / "questions.json"
 
 
-def normalize_text(text):
-    return (
-        text.strip()
-        .lower()
-        .replace("i̇", "i")
-        .replace("ı", "i")
-        .replace("ş", "s")
-        .replace("ç", "c")
-        .replace("ğ", "g")
-        .replace("ü", "u")
-        .replace("ö", "o")
-        .replace(".", "")
-        .replace(",", "")
-        .replace("?", "")
-        .replace("!", "")
-    )
+def normalize_text(text: str) -> str:
+    text = text.lower().strip()
+
+    replacements = {
+        "ı": "i",
+        "ğ": "g",
+        "ü": "u",
+        "ş": "s",
+        "ö": "o",
+        "ç": "c"
+    }
+
+    for old_character, new_character in replacements.items():
+        text = text.replace(old_character, new_character)
+
+    text = re.sub(r"[^a-z0-9\s-]", " ", text)
+    text = re.sub(r"\s+", " ", text)
+
+    return text.strip()
 
 
-def load_questions():
-    file_path = Path(__file__).parent.parent / "data" / "questions.json"
-
+def load_questions() -> list[dict[str, Any]]:
     try:
-        with open(file_path, "r", encoding="utf-8") as file:
+        with DATA_FILE.open("r", encoding="utf-8") as file:
             data = json.load(file)
 
         if not isinstance(data, list):
-            print("Hata: questions.json liste şeklinde olmalıdır.")
             return []
 
         return data
 
     except FileNotFoundError:
-        print("Hata: questions.json dosyası bulunamadı.")
+        print(f"Veri dosyası bulunamadı: {DATA_FILE}")
         return []
 
-    except json.JSONDecodeError:
-        print("Hata: questions.json dosyasının yapısı bozuk.")
+    except json.JSONDecodeError as error:
+        print(f"JSON dosyasında hata var: {error}")
         return []
 
 
-def calculate_similarity(first_text, second_text):
-    return SequenceMatcher(
-        None,
-        first_text,
-        second_text
-    ).ratio()
-
-
-def find_answer(question):
+def calculate_score(question: str, support_item: dict[str, Any]) -> int:
     normalized_question = normalize_text(question)
-    question_words = set(normalized_question.split())
-    questions = load_questions()
 
-    best_answer = None
-    highest_score = 0
+    support_question = normalize_text(
+        str(support_item.get("question", ""))
+    )
 
-    for item in questions:
-        saved_question = normalize_text(
-            item.get("question", "")
-        )
+    keywords = support_item.get("keywords", [])
 
-        keywords = item.get("keywords", [])
-        score = 0
+    score = 0
 
-        for keyword in keywords:
-            normalized_keyword = normalize_text(keyword)
+    if support_question == normalized_question:
+        score += 100
 
-            if normalized_keyword in {
-                normalize_text(word) for word in GENERIC_WORDS
-            }:
-                continue
+    if support_question in normalized_question:
+        score += 40
 
-            if normalized_keyword in normalized_question:
+    for keyword in keywords:
+        normalized_keyword = normalize_text(str(keyword))
+
+        if normalized_keyword in normalized_question:
+            score += 20
+
+        keyword_words = normalized_keyword.split()
+        question_words = normalized_question.split()
+
+        for word in keyword_words:
+            if word in question_words and len(word) > 2:
                 score += 3
 
-            elif any(
-                calculate_similarity(normalized_keyword, word) >= 0.85
-                for word in question_words
-            ):
-                score += 1
+    return score
 
-        sentence_similarity = calculate_similarity(
-            normalized_question,
-            saved_question
+
+def find_answer(question: str, category: str) -> str:
+    support_items = load_questions()
+
+    category_items = [
+        item
+        for item in support_items
+        if item.get("category") == category
+    ]
+
+    if not category_items:
+        return (
+            "Bu kategori için henüz kayıtlı bir çözüm bulunmuyor. "
+            "Lütfen başka bir kategori seçin."
         )
 
-        score += sentence_similarity
+    best_item = None
+    best_score = 0
 
-        if saved_question == normalized_question:
-            score += 5
+    for item in category_items:
+        current_score = calculate_score(question, item)
 
-        if score > highest_score:
-            highest_score = score
-            best_answer = item.get("answer")
+        if current_score > best_score:
+            best_score = current_score
+            best_item = item
 
-    if highest_score >= 2:
-        return best_answer
+    if best_item is not None and best_score >= 6:
+        return str(best_item.get("answer", ""))
 
     return (
-        "Sorununuzu anlayamadım. "
-        "Lütfen cihazı ve yaşadığınız sorunu daha ayrıntılı açıklayın."
+        "Yazdığınız soru seçtiğiniz kategoriyle eşleşmedi veya "
+        "bilgi tabanımızda henüz bu sorunla ilgili yeterli çözüm bulunmuyor. "
+        "Lütfen kategoriyi kontrol ederek sorunu daha ayrıntılı yazın."
     )
+
+
+def get_questions_by_category(category: str) -> list[str]:
+    support_items = load_questions()
+
+    return [
+        str(item.get("question", ""))
+        for item in support_items
+        if item.get("category") == category
+        and item.get("question")
+    ]

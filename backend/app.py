@@ -2,7 +2,7 @@ from pathlib import Path
 
 from flask import Flask, redirect, render_template, request, session, url_for
 
-from ai_engine import find_answer
+from ai_engine import find_answer, get_questions_by_category
 
 
 PROJECT_FOLDER = Path(__file__).resolve().parent.parent
@@ -42,7 +42,7 @@ def home():
             category = "diger"
 
         if question:
-            answer = find_answer(question)
+            answer = find_answer(question, category)
 
             chat_history = session["chat_history"]
 
@@ -59,10 +59,16 @@ def home():
 
         return redirect(url_for("home"))
 
+    category_questions = {
+        category_key: get_questions_by_category(category_key)
+        for category_key in CATEGORIES
+    }
+
     return render_template(
         "index.html",
         chat_history=session["chat_history"],
-        categories=CATEGORIES
+        categories=CATEGORIES,
+        category_questions=category_questions
     )
 
 
