@@ -50,10 +50,12 @@ def prepare_chat_history():
 
         if "category_name" not in chat:
             category = chat.get("category", "diger")
+
             chat["category_name"] = CATEGORIES.get(
                 category,
                 CATEGORIES["diger"]
             )
+
             history_changed = True
 
     if history_changed:
@@ -97,6 +99,7 @@ def calculate_statistics(chat_history):
             most_used_category_key,
             CATEGORIES["diger"]
         )
+
     else:
         most_used_category_name = "Henüz veri yok"
         most_used_category_count = 0
@@ -190,11 +193,13 @@ def save_feedback(chat_id):
 @app.route("/clear-history", methods=["POST"])
 def clear_history():
     session["chat_history"] = []
+
     return redirect(url_for("home"))
 
 
 if __name__ == "__main__":
     print("HTML klasörü:", TEMPLATE_FOLDER)
+
     print(
         "index.html var mı:",
         (TEMPLATE_FOLDER / "index.html").exists()

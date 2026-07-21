@@ -22,24 +22,17 @@
         type="button"
         id="theme-button"
         class="theme-button"
-        aria-label="Koyu modu aç veya kapat"
     >
         🌙 Koyu Mod
     </button>
 
     <main class="container">
 
-        <!-- BAŞLIK -->
-
         <section class="header">
 
-            <div class="logo">
-                🤖
-            </div>
+            <div class="logo">🤖</div>
 
-            <h1>
-                Smart Support AI
-            </h1>
+            <h1>Smart Support AI</h1>
 
             <p>
                 Sorununuzun kategorisini seçin ve teknik probleminizi yazın.
@@ -48,15 +41,11 @@
 
         </section>
 
-        <!-- İSTATİSTİK PANELİ -->
-
         <section class="statistics-section">
 
             <div class="statistics-header">
 
-                <h2>
-                    📊 Sistem İstatistikleri
-                </h2>
+                <h2>📊 Sistem İstatistikleri</h2>
 
                 <p>
                     Soruların ve kullanıcı geri bildirimlerinin özeti
@@ -68,9 +57,7 @@
 
                 <article class="stat-card">
 
-                    <div class="stat-icon">
-                        💬
-                    </div>
+                    <div class="stat-icon">💬</div>
 
                     <div class="stat-content">
 
@@ -88,9 +75,7 @@
 
                 <article class="stat-card positive-stat">
 
-                    <div class="stat-icon">
-                        👍
-                    </div>
+                    <div class="stat-icon">👍</div>
 
                     <div class="stat-content">
 
@@ -108,9 +93,7 @@
 
                 <article class="stat-card negative-stat">
 
-                    <div class="stat-icon">
-                        👎
-                    </div>
+                    <div class="stat-icon">👎</div>
 
                     <div class="stat-content">
 
@@ -128,9 +111,7 @@
 
                 <article class="stat-card waiting-stat">
 
-                    <div class="stat-icon">
-                        ⏳
-                    </div>
+                    <div class="stat-icon">⏳</div>
 
                     <div class="stat-content">
 
@@ -148,9 +129,7 @@
 
                 <article class="stat-card popular-stat">
 
-                    <div class="stat-icon">
-                        ⭐
-                    </div>
+                    <div class="stat-icon">⭐</div>
 
                     <div class="stat-content">
 
@@ -201,8 +180,6 @@
             </details>
 
         </section>
-
-        <!-- SORU FORMU -->
 
         <section class="support-card">
 
@@ -290,8 +267,6 @@
 
         </section>
 
-        <!-- SOHBET GEÇMİŞİ -->
-
         {% if chat_history %}
 
             <section class="history-section">
@@ -300,9 +275,7 @@
 
                     <div>
 
-                        <h2>
-                            Sohbet Geçmişi
-                        </h2>
+                        <h2>Sohbet Geçmişi</h2>
 
                         <p>
                             Daha önce sorduğunuz teknik sorular
@@ -339,8 +312,6 @@
                                 {{ chat.category_name }}
                             </div>
 
-                            <!-- KULLANICI MESAJI -->
-
                             <div class="message user-message">
 
                                 <div class="message-icon">
@@ -349,9 +320,7 @@
 
                                 <div class="message-content">
 
-                                    <h3>
-                                        Siz
-                                    </h3>
+                                    <h3>Siz</h3>
 
                                     <p>
                                         {{ chat.question }}
@@ -361,8 +330,6 @@
 
                             </div>
 
-                            <!-- YAPAY ZEKÂ CEVABI -->
-
                             <div class="message bot-message">
 
                                 <div class="message-icon">
@@ -371,9 +338,7 @@
 
                                 <div class="message-content">
 
-                                    <h3>
-                                        Smart Support AI
-                                    </h3>
+                                    <h3>Smart Support AI</h3>
 
                                     <p class="answer-text">
                                         {{ chat.answer }}
@@ -387,8 +352,6 @@
                                         >
                                             📋 Cevabı Kopyala
                                         </button>
-
-                                        <!-- GERİ BİLDİRİM YAPILMADIYSA -->
 
                                         {% if not chat.feedback %}
 
@@ -444,8 +407,6 @@
 
                                             </div>
 
-                                        <!-- OLUMLU GERİ BİLDİRİM -->
-
                                         {% elif chat.feedback == "positive" %}
 
                                             <div class="feedback-result positive-result">
@@ -455,14 +416,11 @@
 
                                             </div>
 
-                                        <!-- OLUMSUZ GERİ BİLDİRİM -->
-
                                         {% elif chat.feedback == "negative" %}
 
                                             <div class="feedback-result negative-result">
 
-                                                📝 Teşekkürler! Bu çözümü
-                                                geliştirmek için geri bildiriminizi
+                                                📝 Teşekkürler! Geri bildiriminizi
                                                 kaydettik.
 
                                             </div>
@@ -516,8 +474,6 @@
             {{ category_questions | tojson }};
 
 
-        /* KATEGORİYE GÖRE ÖRNEK SORULAR */
-
         function showCategoryQuestions(category) {
             categoryExampleList.innerHTML = "";
 
@@ -534,12 +490,8 @@
                     document.createElement("button");
 
                 questionButton.type = "button";
-
-                questionButton.className =
-                    "category-question";
-
-                questionButton.textContent =
-                    question;
+                questionButton.className = "category-question";
+                questionButton.textContent = question;
 
                 questionButton.addEventListener(
                     "click",
@@ -573,13 +525,10 @@
         });
 
 
-        /* YÜKLENME ANİMASYONU */
-
         supportForm.addEventListener("submit", function (event) {
             event.preventDefault();
 
             loadingBox.style.display = "flex";
-
             solutionButton.disabled = true;
 
             solutionButton.textContent =
@@ -590,8 +539,6 @@
             }, 1200);
         });
 
-
-        /* CEVABI KOPYALAMA */
 
         const copyButtons =
             document.querySelectorAll(".copy-button");
@@ -635,21 +582,16 @@
         });
 
 
-        /* KOYU MOD */
-
         function updateThemeButton() {
             const darkModeActive =
                 document.body.classList.contains(
                     "dark-mode"
                 );
 
-            if (darkModeActive) {
-                themeButton.textContent =
-                    "☀️ Açık Mod";
-            } else {
-                themeButton.textContent =
-                    "🌙 Koyu Mod";
-            }
+            themeButton.textContent =
+                darkModeActive
+                    ? "☀️ Açık Mod"
+                    : "🌙 Koyu Mod";
         }
 
 
@@ -679,17 +621,10 @@
                     "dark-mode"
                 );
 
-            if (darkModeActive) {
-                localStorage.setItem(
-                    "smartSupportTheme",
-                    "dark"
-                );
-            } else {
-                localStorage.setItem(
-                    "smartSupportTheme",
-                    "light"
-                );
-            }
+            localStorage.setItem(
+                "smartSupportTheme",
+                darkModeActive ? "dark" : "light"
+            );
 
             updateThemeButton();
         });
