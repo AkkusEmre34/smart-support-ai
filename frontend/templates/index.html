@@ -3,37 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Smart Support AI</title>
+
     <link
         rel="stylesheet"
         href="{{ url_for('static', filename='style.css') }}"
     >
 </head>
+
 <body>
+
     <main class="container">
-        <h1>Smart Support AI</h1>
-        <p class="subtitle">
-            Teknik sorununuzu yazın, sistem size uygun çözümü önersin.
-        </p>
 
-        <form method="POST">
-            <input
-                type="text"
-                name="question"
-                placeholder="Örnek: Wi-Fi bağlantım kesiliyor"
-                value="{{ question }}"
-                required
-            >
+        <section class="header">
+            <div class="logo">🤖</div>
 
-            <button type="submit">Çözüm Bul</button>
-        </form>
+            <h1>Smart Support AI</h1>
 
-        {% if answer %}
-            <section class="answer-box">
-                <h2>Önerilen Çözüm</h2>
-                <p>{{ answer }}</p>
-            </section>
-        {% endif %}
+            <p>
+                Teknik sorununuzu yazın, sistem size uygun çözüm önerisini sunsun.
+            </p>
+        </section>
+
+        <section class="support-card">
+
+            <form method="POST">
+
+                <label for="question">
+                    Teknik sorununuz
+                </label>
+
+                <textarea
+                    id="question"
+                    name="question"
+                    placeholder="Örnek: Bilgisayarım Wi-Fi ağına bağlanmıyor."
+                    required
+                >{{ question }}</textarea>
+
+                <button type="submit">
+                    Çözüm Bul
+                </button>
+
+            </form>
+
+            {% if answer %}
+                <div class="answer-box">
+
+                    <div class="answer-title">
+                        <span>✅</span>
+                        <h2>Önerilen Çözüm</h2>
+                    </div>
+
+                    <p>{{ answer }}</p>
+
+                </div>
+            {% endif %}
+
+        </section>
+
+        <section class="examples">
+
+            <h2>Örnek Sorular</h2>
+
+            <div class="example-list">
+                <span>Wi-Fi bağlantım kesiliyor</span>
+                <span>Bilgisayardan ses gelmiyor</span>
+                <span>Yazıcı çıktı vermiyor</span>
+                <span>Mikrofonum çalışmıyor</span>
+            </div>
+
+        </section>
+
     </main>
+
 </body>
 </html>
