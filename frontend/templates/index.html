@@ -18,17 +18,32 @@
 
 <body>
 
+    <button
+        type="button"
+        id="theme-button"
+        class="theme-button"
+        aria-label="Koyu modu aç veya kapat"
+    >
+        🌙 Koyu Mod
+    </button>
+
     <main class="container">
 
         <section class="header">
-            <div class="logo">🤖</div>
 
-            <h1>Smart Support AI</h1>
+            <div class="logo">
+                🤖
+            </div>
+
+            <h1>
+                Smart Support AI
+            </h1>
 
             <p>
                 Sorununuzun kategorisini seçin ve teknik probleminizi yazın.
                 Sistem size uygun çözüm önerisini sunsun.
             </p>
+
         </section>
 
         <section class="support-card">
@@ -61,7 +76,9 @@
                     id="category-example-box"
                     class="category-example-box"
                 >
-                    <h3>Bu kategorideki örnek sorunlar</h3>
+                    <h3>
+                        Bu kategorideki örnek sorunlar
+                    </h3>
 
                     <div
                         id="category-example-list"
@@ -80,18 +97,22 @@
                     required
                 ></textarea>
 
-                <button type="submit" class="solution-button">
+                <button
+                    type="submit"
+                    class="solution-button"
+                >
                     Çözüm Bul
                 </button>
 
-                <div id="loading-box" class="loading-box">
-
+                <div
+                    id="loading-box"
+                    class="loading-box"
+                >
                     <div class="spinner"></div>
 
                     <p>
                         Sorunuz analiz ediliyor...
                     </p>
-
                 </div>
 
             </form>
@@ -105,7 +126,9 @@
                 <div class="history-header">
 
                     <div>
-                        <h2>Sohbet Geçmişi</h2>
+                        <h2>
+                            Sohbet Geçmişi
+                        </h2>
 
                         <p>
                             Daha önce sorduğunuz teknik sorular
@@ -144,7 +167,9 @@
 
                                 <div class="message-content">
 
-                                    <h3>Siz</h3>
+                                    <h3>
+                                        Siz
+                                    </h3>
 
                                     <p>
                                         {{ chat.question }}
@@ -162,7 +187,9 @@
 
                                 <div class="message-content">
 
-                                    <h3>Smart Support AI</h3>
+                                    <h3>
+                                        Smart Support AI
+                                    </h3>
 
                                     <p class="answer-text">
                                         {{ chat.answer }}
@@ -212,6 +239,9 @@
 
         const categoryExampleList =
             document.getElementById("category-example-list");
+
+        const themeButton =
+            document.getElementById("theme-button");
 
         const categoryQuestions =
             {{ category_questions | tojson }};
@@ -307,6 +337,55 @@
                 }
             });
         });
+
+
+        function updateThemeButton() {
+            const darkModeActive =
+                document.body.classList.contains("dark-mode");
+
+            if (darkModeActive) {
+                themeButton.textContent = "☀️ Açık Mod";
+            } else {
+                themeButton.textContent = "🌙 Koyu Mod";
+            }
+        }
+
+
+        function loadSavedTheme() {
+            const savedTheme =
+                localStorage.getItem("smartSupportTheme");
+
+            if (savedTheme === "dark") {
+                document.body.classList.add("dark-mode");
+            }
+
+            updateThemeButton();
+        }
+
+
+        themeButton.addEventListener("click", function () {
+            document.body.classList.toggle("dark-mode");
+
+            const darkModeActive =
+                document.body.classList.contains("dark-mode");
+
+            if (darkModeActive) {
+                localStorage.setItem(
+                    "smartSupportTheme",
+                    "dark"
+                );
+            } else {
+                localStorage.setItem(
+                    "smartSupportTheme",
+                    "light"
+                );
+            }
+
+            updateThemeButton();
+        });
+
+
+        loadSavedTheme();
     </script>
 
 </body>
