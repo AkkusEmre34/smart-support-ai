@@ -317,11 +317,14 @@ def admin_logout():
         url_for("admin_login")
     )
 
-
 @app.route("/admin")
 @admin_login_required
 def admin_panel():
     support_items = load_questions()
+
+    chat_history = get_all_chats()
+
+    statistics = calculate_statistics(chat_history)
 
     return render_template(
         "admin.html",
@@ -331,8 +334,10 @@ def admin_panel():
         admin_username=session.get(
             "admin_username",
             "admin"
-        )
+        ),
+        statistics=statistics
     )
+
 
 
 @app.route(

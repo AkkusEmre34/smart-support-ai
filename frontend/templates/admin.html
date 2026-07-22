@@ -47,6 +47,34 @@
             </a>
 
         </header>
+        <section class="admin-dashboard">
+
+    <article class="admin-dashboard-card">
+        <h3>📚 Bilgi Tabanı</h3>
+        <strong>{{ total_items }}</strong>
+    </article>
+
+    <article class="admin-dashboard-card">
+        <h3>💬 Toplam Soru</h3>
+        <strong>{{ statistics.total_questions }}</strong>
+    </article>
+
+    <article class="admin-dashboard-card">
+        <h3>👍 Olumlu</h3>
+        <strong>{{ statistics.positive_feedback }}</strong>
+    </article>
+
+    <article class="admin-dashboard-card">
+        <h3>👎 Olumsuz</h3>
+        <strong>{{ statistics.negative_feedback }}</strong>
+    </article>
+
+    <article class="admin-dashboard-card">
+        <h3>⭐ En Çok Sorulan</h3>
+        <strong>{{ statistics.most_used_category_name }}</strong>
+    </article>
+
+</section>
 
         {% with messages = get_flashed_messages(
             with_categories=true
