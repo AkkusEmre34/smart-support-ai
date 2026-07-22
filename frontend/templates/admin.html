@@ -16,6 +16,7 @@
         rel="stylesheet"
         href="{{ url_for('static', filename='style.css') }}"
     >
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
@@ -40,57 +41,29 @@
                 </p>
             </div>
 
-            <a
-                href="{{ url_for('home') }}"
-                class="admin-home-button"
-            >
-                ← Ana Sayfaya Dön
-            </a>
+            <div class="admin-header-actions">
+
+                <span class="admin-user-name">
+                    👤 {{ admin_username }}
+                </span>
+
+                <a
+                    href="{{ url_for('home') }}"
+                    class="admin-home-button"
+                >
+                    ← Ana Sayfaya Dön
+                </a>
+
+                <a
+                    href="{{ url_for('admin_logout') }}"
+                    class="admin-logout-button"
+                >
+                    Çıkış Yap
+                </a>
+
+            </div>
 
         </header>
-        <section class="admin-dashboard">
-
-    <article class="admin-dashboard-card">
-        <h3>📚 Bilgi Tabanı</h3>
-        <strong>{{ total_items }}</strong>
-    </article>
-
-    <article class="admin-dashboard-card">
-        <h3>💬 Toplam Soru</h3>
-        <strong>{{ statistics.total_questions }}</strong>
-    </article>
-
-    <article class="admin-dashboard-card">
-        <h3>👍 Olumlu</h3>
-        <strong>{{ statistics.positive_feedback }}</strong>
-    </article>
-
-    <article class="admin-dashboard-card">
-        <h3>👎 Olumsuz</h3>
-        <strong>{{ statistics.negative_feedback }}</strong>
-    </article>
-
-    <article class="admin-dashboard-card">
-        <h3>⭐ En Çok Sorulan</h3>
-        <strong>{{ statistics.most_used_category_name }}</strong>
-    </article>
-
-</section>
-<section class="admin-chart-section">
-
-    <div class="admin-chart-card">
-        <h2>📊 Kategori Dağılımı</h2>
-
-        <canvas id="categoryChart"></canvas>
-    </div>
-
-    <div class="admin-chart-card">
-        <h2>👍 Geri Bildirim Oranı</h2>
-
-        <canvas id="feedbackChart"></canvas>
-    </div>
-
-</section>
 
 
         {% with messages = get_flashed_messages(
@@ -118,19 +91,118 @@
 
         {% endwith %}
 
-        <section class="admin-summary">
 
-            <article class="admin-summary-card">
-                <span>Toplam kayıt</span>
-                <strong>{{ total_items }}</strong>
+        <section class="admin-dashboard">
+
+            <article class="admin-dashboard-card">
+
+                <h3>
+                    📚 Bilgi Tabanı
+                </h3>
+
+                <strong>
+                    {{ total_items }}
+                </strong>
+
             </article>
 
-            <article class="admin-summary-card">
-                <span>Kategori sayısı</span>
-                <strong>{{ categories|length }}</strong>
+
+            <article class="admin-dashboard-card">
+
+                <h3>
+                    💬 Toplam Soru
+                </h3>
+
+                <strong>
+                    {{ statistics.total_questions }}
+                </strong>
+
+            </article>
+
+
+            <article class="admin-dashboard-card">
+
+                <h3>
+                    👍 Olumlu
+                </h3>
+
+                <strong>
+                    {{ statistics.positive_feedback }}
+                </strong>
+
+            </article>
+
+
+            <article class="admin-dashboard-card">
+
+                <h3>
+                    👎 Olumsuz
+                </h3>
+
+                <strong>
+                    {{ statistics.negative_feedback }}
+                </strong>
+
+            </article>
+
+
+            <article class="admin-dashboard-card">
+
+                <h3>
+                    ⭐ En Çok Sorulan
+                </h3>
+
+                <strong>
+                    {{ statistics.most_used_category_name }}
+                </strong>
+
+                <small>
+                    {{ statistics.most_used_category_count }}
+                    soru
+                </small>
+
             </article>
 
         </section>
+
+
+        <section class="admin-chart-section">
+
+            <article class="admin-chart-card">
+
+                <h2>
+                    📊 Kategori Dağılımı
+                </h2>
+
+                <p class="admin-chart-description">
+                    Kullanıcı sorularının kategorilere göre dağılımı
+                </p>
+
+                <div class="admin-chart-wrapper">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+
+            </article>
+
+
+            <article class="admin-chart-card">
+
+                <h2>
+                    👍 Geri Bildirim Oranı
+                </h2>
+
+                <p class="admin-chart-description">
+                    Cevaplara verilen geri bildirimlerin dağılımı
+                </p>
+
+                <div class="admin-chart-wrapper">
+                    <canvas id="feedbackChart"></canvas>
+                </div>
+
+            </article>
+
+        </section>
+
 
         <section
             class="admin-form-section"
@@ -148,6 +220,7 @@
                 </p>
 
             </div>
+
 
             <form
                 method="POST"
@@ -168,6 +241,7 @@
                         name="category"
                         required
                     >
+
                         <option
                             value=""
                             selected
@@ -184,9 +258,11 @@
                             </option>
 
                         {% endfor %}
+
                     </select>
 
                 </div>
+
 
                 <div class="admin-form-group">
 
@@ -203,6 +279,7 @@
                     >
 
                 </div>
+
 
                 <div class="admin-form-group admin-full-width">
 
@@ -223,6 +300,7 @@
 
                 </div>
 
+
                 <div class="admin-form-group admin-full-width">
 
                     <label for="admin-answer">
@@ -237,6 +315,7 @@
                     ></textarea>
 
                 </div>
+
 
                 <div class="admin-form-actions admin-full-width">
 
@@ -270,11 +349,13 @@
 
         </section>
 
+
         <section class="admin-content">
 
             <div class="admin-content-header">
 
                 <div>
+
                     <h2>
                         📚 Bilgi Tabanı Kayıtları
                     </h2>
@@ -282,9 +363,35 @@
                     <p>
                         Sistemde bulunan teknik destek kayıtları
                     </p>
+
+                </div>
+
+
+                <div class="admin-search-area">
+
+                    <label for="admin-search">
+                        Kayıtlarda ara
+                    </label>
+
+                    <input
+                        type="search"
+                        id="admin-search"
+                        class="admin-search-input"
+                        placeholder="Soru, kategori veya anahtar kelime..."
+                    >
+
                 </div>
 
             </div>
+
+
+            <div
+                class="admin-no-result"
+                id="admin-no-result"
+            >
+                Aramanızla eşleşen kayıt bulunamadı.
+            </div>
+
 
             {% if support_items %}
 
@@ -293,6 +400,7 @@
                     <table class="admin-table">
 
                         <thead>
+
                             <tr>
                                 <th>No</th>
                                 <th>Kategori</th>
@@ -301,32 +409,42 @@
                                 <th>Cevap</th>
                                 <th>İşlemler</th>
                             </tr>
+
                         </thead>
+
 
                         <tbody>
 
                             {% for item in support_items %}
 
-                                <tr>
+                                <tr class="admin-record-row">
 
                                     <td>
                                         {{ loop.index }}
                                     </td>
 
+
                                     <td>
+
                                         <span class="admin-category-badge">
+
                                             {{ categories.get(
                                                 item.category,
                                                 item.category
                                             ) }}
+
                                         </span>
+
                                     </td>
+
 
                                     <td class="admin-question-cell">
                                         {{ item.question }}
                                     </td>
 
+
                                     <td>
+
                                         <div class="admin-keyword-list">
 
                                             {% for keyword
@@ -339,11 +457,14 @@
                                             {% endfor %}
 
                                         </div>
+
                                     </td>
+
 
                                     <td class="admin-answer-cell">
                                         {{ item.answer }}
                                     </td>
+
 
                                     <td>
 
@@ -364,6 +485,7 @@
                                             >
                                                 ✏️
                                             </button>
+
 
                                             <form
                                                 method="POST"
@@ -420,206 +542,394 @@
 
     </main>
 
+
     <script>
-        const adminForm =
-            document.getElementById("admin-support-form");
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
 
-        const adminCategory =
-            document.getElementById("admin-category");
+                const adminForm =
+                    document.getElementById(
+                        "admin-support-form"
+                    );
 
-        const adminQuestion =
-            document.getElementById("admin-question");
+                const adminCategory =
+                    document.getElementById(
+                        "admin-category"
+                    );
 
-        const adminKeywords =
-            document.getElementById("admin-keywords");
+                const adminQuestion =
+                    document.getElementById(
+                        "admin-question"
+                    );
 
-        const adminAnswer =
-            document.getElementById("admin-answer");
+                const adminKeywords =
+                    document.getElementById(
+                        "admin-keywords"
+                    );
 
-        const adminFormTitle =
-            document.getElementById("admin-form-title");
+                const adminAnswer =
+                    document.getElementById(
+                        "admin-answer"
+                    );
 
-        const adminFormDescription =
-            document.getElementById(
-                "admin-form-description"
-            );
+                const adminFormTitle =
+                    document.getElementById(
+                        "admin-form-title"
+                    );
 
-        const adminSaveButton =
-            document.getElementById("admin-save-button");
+                const adminFormDescription =
+                    document.getElementById(
+                        "admin-form-description"
+                    );
 
-        const adminResetButton =
-            document.getElementById("admin-reset-button");
+                const adminSaveButton =
+                    document.getElementById(
+                        "admin-save-button"
+                    );
 
-        const adminCancelEditButton =
-            document.getElementById(
-                "admin-cancel-edit-button"
-            );
+                const adminResetButton =
+                    document.getElementById(
+                        "admin-reset-button"
+                    );
 
-        const editButtons =
-            document.querySelectorAll(
-                ".admin-edit-button"
-            );
+                const adminCancelEditButton =
+                    document.getElementById(
+                        "admin-cancel-edit-button"
+                    );
+
+                const editButtons =
+                    document.querySelectorAll(
+                        ".admin-edit-button"
+                    );
+
+                const adminSearch =
+                    document.getElementById(
+                        "admin-search"
+                    );
+
+                const adminRows =
+                    document.querySelectorAll(
+                        ".admin-record-row"
+                    );
+
+                const adminNoResult =
+                    document.getElementById(
+                        "admin-no-result"
+                    );
 
 
-        function resetAdminForm() {
-            adminForm.reset();
+                function resetAdminForm() {
 
-            adminForm.action =
-                adminForm.dataset.addUrl;
+                    if (!adminForm) {
+                        return;
+                    }
 
-            adminFormTitle.textContent =
-                "➕ Yeni Soru Ekle";
+                    adminForm.reset();
 
-            adminFormDescription.textContent =
-                "Bilgi tabanına yeni teknik destek kaydı ekleyin.";
-
-            adminSaveButton.textContent =
-                "Kaydı Ekle";
-
-            adminCancelEditButton.style.display =
-                "none";
-        }
-
-
-        editButtons.forEach(function (button) {
-            button.addEventListener(
-                "click",
-                function () {
                     adminForm.action =
-                        button.dataset.editUrl;
-
-                    adminCategory.value =
-                        button.dataset.category;
-
-                    adminQuestion.value =
-                        button.dataset.question;
-
-                    adminKeywords.value =
-                        button.dataset.keywords;
-
-                    adminAnswer.value =
-                        button.dataset.answer;
+                        adminForm.dataset.addUrl;
 
                     adminFormTitle.textContent =
-                        "✏️ Soruyu Düzenle";
+                        "➕ Yeni Soru Ekle";
 
                     adminFormDescription.textContent =
-                        "Seçilen teknik destek kaydını güncelleyin.";
+                        "Bilgi tabanına yeni teknik destek kaydı ekleyin.";
 
                     adminSaveButton.textContent =
-                        "Değişiklikleri Kaydet";
+                        "Kaydı Ekle";
 
                     adminCancelEditButton.style.display =
-                        "inline-block";
-
-                    document
-                        .getElementById("admin-form-section")
-                        .scrollIntoView({
-                            behavior: "smooth",
-                            block: "start"
-                        });
-
-                    adminQuestion.focus();
+                        "none";
                 }
-            );
-        });
 
 
-        adminCancelEditButton.addEventListener(
-            "click",
-            resetAdminForm
-        );
+                editButtons.forEach(
+                    function (button) {
 
+                        button.addEventListener(
+                            "click",
+                            function () {
 
-        adminResetButton.addEventListener(
-            "click",
-            function () {
-                setTimeout(
-                    resetAdminForm,
-                    0
+                                adminForm.action =
+                                    button.dataset.editUrl;
+
+                                adminCategory.value =
+                                    button.dataset.category;
+
+                                adminQuestion.value =
+                                    button.dataset.question;
+
+                                adminKeywords.value =
+                                    button.dataset.keywords;
+
+                                adminAnswer.value =
+                                    button.dataset.answer;
+
+                                adminFormTitle.textContent =
+                                    "✏️ Soruyu Düzenle";
+
+                                adminFormDescription.textContent =
+                                    "Seçilen teknik destek kaydını güncelleyin.";
+
+                                adminSaveButton.textContent =
+                                    "Değişiklikleri Kaydet";
+
+                                adminCancelEditButton.style.display =
+                                    "inline-block";
+
+                                document
+                                    .getElementById(
+                                        "admin-form-section"
+                                    )
+                                    .scrollIntoView({
+                                        behavior: "smooth",
+                                        block: "start"
+                                    });
+
+                                adminQuestion.focus();
+                            }
+                        );
+                    }
                 );
+
+
+                if (adminCancelEditButton) {
+
+                    adminCancelEditButton.addEventListener(
+                        "click",
+                        resetAdminForm
+                    );
+                }
+
+
+                if (adminResetButton) {
+
+                    adminResetButton.addEventListener(
+                        "click",
+                        function () {
+
+                            setTimeout(
+                                resetAdminForm,
+                                0
+                            );
+                        }
+                    );
+                }
+
+
+                if (adminSearch) {
+
+                    adminSearch.addEventListener(
+                        "input",
+                        function () {
+
+                            const searchValue =
+                                adminSearch.value
+                                    .toLocaleLowerCase(
+                                        "tr-TR"
+                                    )
+                                    .trim();
+
+                            let visibleRowCount = 0;
+
+
+                            adminRows.forEach(
+                                function (row) {
+
+                                    const rowText =
+                                        row.textContent
+                                            .toLocaleLowerCase(
+                                                "tr-TR"
+                                            );
+
+                                    const isVisible =
+                                        rowText.includes(
+                                            searchValue
+                                        );
+
+                                    row.style.display =
+                                        isVisible
+                                            ? ""
+                                            : "none";
+
+                                    if (isVisible) {
+                                        visibleRowCount += 1;
+                                    }
+                                }
+                            );
+
+
+                            if (adminNoResult) {
+
+                                adminNoResult.style.display =
+                                    visibleRowCount === 0
+                                    && adminRows.length > 0
+                                        ? "block"
+                                        : "none";
+                            }
+                        }
+                    );
+                }
+
+
+                resetAdminForm();
+
+
+                const categoryChartElement =
+                    document.getElementById(
+                        "categoryChart"
+                    );
+
+
+                if (
+                    categoryChartElement
+                    && typeof Chart !== "undefined"
+                ) {
+
+                    new Chart(
+                        categoryChartElement,
+                        {
+                            type: "bar",
+
+                            data: {
+
+                                labels: [
+
+                                    {% for item in statistics.category_statistics %}
+
+                                        {{ item.name | tojson }},
+
+                                    {% endfor %}
+
+                                ],
+
+                                datasets: [
+                                    {
+                                        label: "Soru Sayısı",
+
+                                        data: [
+
+                                            {% for item in statistics.category_statistics %}
+
+                                                {{ item.count }},
+
+                                            {% endfor %}
+
+                                        ],
+
+                                        backgroundColor: [
+                                            "#4f46e5",
+                                            "#16a34a",
+                                            "#dc2626",
+                                            "#f59e0b",
+                                            "#0ea5e9",
+                                            "#8b5cf6",
+                                            "#14b8a6",
+                                            "#ec4899"
+                                        ],
+
+                                        borderRadius: 8,
+                                        maxBarThickness: 55
+                                    }
+                                ]
+                            },
+
+                            options: {
+
+                                responsive: true,
+
+                                maintainAspectRatio: false,
+
+                                plugins: {
+
+                                    legend: {
+                                        display: false
+                                    }
+                                },
+
+                                scales: {
+
+                                    y: {
+
+                                        beginAtZero: true,
+
+                                        ticks: {
+                                            precision: 0,
+                                            stepSize: 1
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    );
+                }
+
+
+                const feedbackChartElement =
+                    document.getElementById(
+                        "feedbackChart"
+                    );
+
+
+                if (
+                    feedbackChartElement
+                    && typeof Chart !== "undefined"
+                ) {
+
+                    new Chart(
+                        feedbackChartElement,
+                        {
+                            type: "doughnut",
+
+                            data: {
+
+                                labels: [
+                                    "Olumlu",
+                                    "Olumsuz",
+                                    "Değerlendirilmemiş"
+                                ],
+
+                                datasets: [
+                                    {
+                                        data: [
+                                            {{ statistics.positive_feedback }},
+                                            {{ statistics.negative_feedback }},
+                                            {{ statistics.unanswered_feedback }}
+                                        ],
+
+                                        backgroundColor: [
+                                            "#22c55e",
+                                            "#ef4444",
+                                            "#f59e0b"
+                                        ],
+
+                                        borderWidth: 0
+                                    }
+                                ]
+                            },
+
+                            options: {
+
+                                responsive: true,
+
+                                maintainAspectRatio: false,
+
+                                cutout: "62%",
+
+                                plugins: {
+
+                                    legend: {
+                                        position: "bottom"
+                                    }
+                                }
+                            }
+                        }
+                    );
+                }
             }
         );
-
-
-        resetAdminForm();
     </script>
-    const categoryChart = document.getElementById("categoryChart");
-
-if(categoryChart){
-
-new Chart(categoryChart,{
-
-type:"bar",
-
-data:{
-
-labels:[
-{% for item in statistics.category_statistics %}
-"{{ item.name }}",
-{% endfor %}
-],
-
-datasets:[{
-
-label:"Soru Sayısı",
-
-data:[
-{% for item in statistics.category_statistics %}
-{{ item.count }},
-{% endfor %}
-],
-
-backgroundColor:[
-"#4f46e5",
-"#16a34a",
-"#dc2626",
-"#f59e0b",
-"#0ea5e9",
-"#8b5cf6",
-"#14b8a6",
-"#ec4899"
-]
-
-}]
-
-}
-
-});
-
-}
-
-const feedbackChart=document.getElementById("feedbackChart");
-
-if(feedbackChart){
-
-new Chart(feedbackChart,{
-
-type:"pie",
-
-data:{
-
-labels:["Olumlu","Olumsuz"],
-
-datasets:[{
-
-data:[
-{{ statistics.positive_feedback }},
-{{ statistics.negative_feedback }}
-],
-
-backgroundColor:[
-"#22c55e",
-"#ef4444"
-]
-
-}]
-
-}
-
-});
-
-}
 
 </body>
 </html>
