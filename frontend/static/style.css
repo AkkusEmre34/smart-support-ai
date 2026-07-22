@@ -1109,3 +1109,271 @@ body.dark-mode .admin-dashboard-card strong{
 body.dark-mode .admin-chart-card{
     background:#111827;
 }
+/* ==================================================
+   ÇOK SAYFALI ADMIN PANELİ ANA YAPISI
+================================================== */
+
+.admin-layout-page {
+    min-height: 100vh;
+    padding: 0;
+    background: #f1f5f9;
+}
+
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1100;
+    display: flex;
+    width: 260px;
+    height: 100vh;
+    flex-direction: column;
+    padding: 24px 18px;
+    background: #0f172a;
+    color: #ffffff;
+    transition: transform 0.25s ease;
+}
+
+.admin-sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 35px;
+    padding: 0 8px;
+}
+
+.admin-sidebar-logo {
+    display: flex;
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: #4f46e5;
+    font-size: 25px;
+}
+
+.admin-sidebar-brand h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 18px;
+}
+
+.admin-sidebar-brand span {
+    display: block;
+    margin-top: 3px;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.admin-sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 13px 14px;
+    border-radius: 11px;
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    transition: 0.2s;
+}
+
+.admin-sidebar-link:hover {
+    background: #1e293b;
+    color: #ffffff;
+}
+
+.admin-sidebar-link-active {
+    background: #4f46e5;
+    color: #ffffff;
+}
+
+.admin-sidebar-link-active:hover {
+    background: #4338ca;
+}
+
+.admin-sidebar-icon {
+    width: 23px;
+    text-align: center;
+    font-size: 18px;
+}
+
+.admin-sidebar-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid #334155;
+}
+
+.admin-sidebar-logout {
+    color: #fca5a5;
+}
+
+.admin-sidebar-logout:hover {
+    background: #450a0a;
+    color: #fecaca;
+}
+
+
+/* ==================================================
+   ADMIN ANA İÇERİK
+================================================== */
+
+.admin-main-area {
+    width: calc(100% - 260px);
+    min-width: 0;
+    margin-left: 260px;
+}
+
+.admin-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 900;
+    display: flex;
+    min-height: 86px;
+    align-items: center;
+    gap: 20px;
+    padding: 17px 30px;
+    border-bottom: 1px solid #e2e8f0;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+}
+
+.admin-topbar-title {
+    flex: 1;
+}
+
+.admin-topbar-title h1 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 25px;
+}
+
+.admin-topbar-title p {
+    margin: 5px 0 0;
+    color: #64748b;
+    font-size: 13px;
+}
+
+.admin-topbar-user {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+}
+
+.admin-topbar-avatar {
+    display: flex;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #eef2ff;
+    font-size: 20px;
+}
+
+.admin-topbar-user strong {
+    display: block;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.admin-topbar-user span {
+    display: block;
+    margin-top: 3px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.admin-page-content {
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+.admin-mobile-menu-button {
+    display: none;
+    width: 43px;
+    height: 43px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 10px;
+    background: #eef2ff;
+    color: #4338ca;
+    cursor: pointer;
+    font-size: 21px;
+}
+
+.admin-sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    display: none;
+    background: rgba(15, 23, 42, 0.55);
+}
+
+
+/* ==================================================
+   ADMIN MOBİL GÖRÜNÜM
+================================================== */
+
+@media screen and (max-width: 900px) {
+    .admin-sidebar {
+        transform: translateX(-100%);
+    }
+
+    .admin-sidebar-open {
+        transform: translateX(0);
+    }
+
+    .admin-sidebar-overlay-visible {
+        display: block;
+    }
+
+    .admin-main-area {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .admin-mobile-menu-button {
+        display: block;
+    }
+
+    .admin-topbar {
+        padding: 15px 18px;
+    }
+
+    .admin-page-content {
+        padding: 22px 16px;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .admin-topbar-user div:last-child {
+        display: none;
+    }
+
+    .admin-topbar-title h1 {
+        font-size: 20px;
+    }
+
+    .admin-topbar-title p {
+        display: none;
+    }
+}

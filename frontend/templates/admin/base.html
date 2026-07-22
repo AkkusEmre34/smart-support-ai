@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {% block title %}
+            Smart Support AI Yönetici Paneli
+        {% endblock %}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+
+    {% block head %}
+    {% endblock %}
+</head>
+
+<body class="admin-layout-page">
+
+    <div class="admin-layout">
+
+        <aside class="admin-sidebar">
+
+            <div class="admin-sidebar-brand">
+
+                <div class="admin-sidebar-logo">
+                    🤖
+                </div>
+
+                <div>
+                    <h2>
+                        Smart Support
+                    </h2>
+
+                    <span>
+                        Yönetici Paneli
+                    </span>
+                </div>
+
+            </div>
+
+
+            <nav class="admin-sidebar-menu">
+
+                <a
+                    href="{{ url_for('admin_panel') }}"
+                    class="admin-sidebar-link
+                    {% if active_page == 'dashboard' %}
+                        admin-sidebar-link-active
+                    {% endif %}"
+                >
+                    <span class="admin-sidebar-icon">
+                        📊
+                    </span>
+
+                    <span>
+                        Dashboard
+                    </span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_knowledge') }}"
+                    class="admin-sidebar-link
+                    {% if active_page == 'knowledge' %}
+                        admin-sidebar-link-active
+                    {% endif %}"
+                >
+                    <span class="admin-sidebar-icon">
+                        📚
+                    </span>
+
+                    <span>
+                        Bilgi Tabanı
+                    </span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_reports') }}"
+                    class="admin-sidebar-link
+                    {% if active_page == 'reports' %}
+                        admin-sidebar-link-active
+                    {% endif %}"
+                >
+                    <span class="admin-sidebar-icon">
+                        📈
+                    </span>
+
+                    <span>
+                        Raporlar
+                    </span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_settings') }}"
+                    class="admin-sidebar-link
+                    {% if active_page == 'settings' %}
+                        admin-sidebar-link-active
+                    {% endif %}"
+                >
+                    <span class="admin-sidebar-icon">
+                        ⚙️
+                    </span>
+
+                    <span>
+                        Ayarlar
+                    </span>
+                </a>
+
+            </nav>
+
+
+            <div class="admin-sidebar-bottom">
+
+                <a
+                    href="{{ url_for('home') }}"
+                    class="admin-sidebar-link"
+                >
+                    <span class="admin-sidebar-icon">
+                        🏠
+                    </span>
+
+                    <span>
+                        Ana Sayfa
+                    </span>
+                </a>
+
+
+                <a
+                    href="{{ url_for('admin_logout') }}"
+                    class="admin-sidebar-link
+                    admin-sidebar-logout"
+                >
+                    <span class="admin-sidebar-icon">
+                        🚪
+                    </span>
+
+                    <span>
+                        Çıkış Yap
+                    </span>
+                </a>
+
+            </div>
+
+        </aside>
+
+
+        <section class="admin-main-area">
+
+            <header class="admin-topbar">
+
+                <button
+                    type="button"
+                    class="admin-mobile-menu-button"
+                    id="admin-mobile-menu-button"
+                    aria-label="Menüyü aç veya kapat"
+                >
+                    ☰
+                </button>
+
+
+                <div class="admin-topbar-title">
+
+                    <h1>
+                        {% block page_title %}
+                            Yönetici Paneli
+                        {% endblock %}
+                    </h1>
+
+                    <p>
+                        {% block page_description %}
+                            Smart Support AI sistemini yönetin.
+                        {% endblock %}
+                    </p>
+
+                </div>
+
+
+                <div class="admin-topbar-user">
+
+                    <div class="admin-topbar-avatar">
+                        👤
+                    </div>
+
+                    <div>
+                        <strong>
+                            {{ admin_username }}
+                        </strong>
+
+                        <span>
+                            Yönetici
+                        </span>
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <main class="admin-page-content">
+
+                {% with messages = get_flashed_messages(
+                    with_categories=true
+                ) %}
+
+                    {% if messages %}
+
+                        <section class="admin-message-area">
+
+                            {% for category, message in messages %}
+
+                                <div
+                                    class="admin-message
+                                    admin-message-{{ category }}"
+                                >
+                                    {{ message }}
+                                </div>
+
+                            {% endfor %}
+
+                        </section>
+
+                    {% endif %}
+
+                {% endwith %}
+
+
+                {% block content %}
+                {% endblock %}
+
+            </main>
+
+        </section>
+
+    </div>
+
+
+    <div
+        class="admin-sidebar-overlay"
+        id="admin-sidebar-overlay"
+    ></div>
+
+
+    <script>
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+                const menuButton =
+                    document.getElementById(
+                        "admin-mobile-menu-button"
+                    );
+
+                const sidebar =
+                    document.querySelector(
+                        ".admin-sidebar"
+                    );
+
+                const overlay =
+                    document.getElementById(
+                        "admin-sidebar-overlay"
+                    );
+
+
+                function openSidebar() {
+                    sidebar.classList.add(
+                        "admin-sidebar-open"
+                    );
+
+                    overlay.classList.add(
+                        "admin-sidebar-overlay-visible"
+                    );
+                }
+
+
+                function closeSidebar() {
+                    sidebar.classList.remove(
+                        "admin-sidebar-open"
+                    );
+
+                    overlay.classList.remove(
+                        "admin-sidebar-overlay-visible"
+                    );
+                }
+
+
+                if (menuButton) {
+                    menuButton.addEventListener(
+                        "click",
+                        function () {
+                            if (
+                                sidebar.classList.contains(
+                                    "admin-sidebar-open"
+                                )
+                            ) {
+                                closeSidebar();
+                            } else {
+                                openSidebar();
+                            }
+                        }
+                    );
+                }
+
+
+                if (overlay) {
+                    overlay.addEventListener(
+                        "click",
+                        closeSidebar
+                    );
+                }
+
+
+                window.addEventListener(
+                    "resize",
+                    function () {
+                        if (window.innerWidth > 900) {
+                            closeSidebar();
+                        }
+                    }
+                );
+            }
+        );
+    </script>
+
+    {% block scripts %}
+    {% endblock %}
+
+</body>
+</html>
