@@ -25,7 +25,6 @@
         <header class="admin-header">
 
             <div>
-
                 <span class="admin-label">
                     YÖNETİCİ PANELİ
                 </span>
@@ -35,10 +34,9 @@
                 </h1>
 
                 <p>
-                    Teknik destek sorularını ve çözüm
-                    kayıtlarını yönetin.
+                    Teknik destek sorularını ekleyin,
+                    düzenleyin ve silin.
                 </p>
-
             </div>
 
             <a
@@ -49,8 +47,6 @@
             </a>
 
         </header>
-
-        <!-- BİLDİRİMLER -->
 
         {% with messages = get_flashed_messages(
             with_categories=true
@@ -77,49 +73,33 @@
 
         {% endwith %}
 
-        <!-- ÖZET -->
-
         <section class="admin-summary">
 
             <article class="admin-summary-card">
-
-                <span>
-                    Toplam kayıt
-                </span>
-
-                <strong>
-                    {{ total_items }}
-                </strong>
-
+                <span>Toplam kayıt</span>
+                <strong>{{ total_items }}</strong>
             </article>
 
             <article class="admin-summary-card">
-
-                <span>
-                    Kategori sayısı
-                </span>
-
-                <strong>
-                    {{ categories|length }}
-                </strong>
-
+                <span>Kategori sayısı</span>
+                <strong>{{ categories|length }}</strong>
             </article>
 
         </section>
 
-        <!-- YENİ SORU EKLEME FORMU -->
-
-        <section class="admin-form-section">
+        <section
+            class="admin-form-section"
+            id="admin-form-section"
+        >
 
             <div class="admin-form-header">
 
-                <h2>
+                <h2 id="admin-form-title">
                     ➕ Yeni Soru Ekle
                 </h2>
 
-                <p>
-                    Bilgi tabanına yeni teknik sorun ve
-                    çözüm kaydı ekleyin.
+                <p id="admin-form-description">
+                    Bilgi tabanına yeni teknik destek kaydı ekleyin.
                 </p>
 
             </div>
@@ -128,6 +108,8 @@
                 method="POST"
                 action="{{ url_for('add_support_item') }}"
                 class="admin-add-form"
+                id="admin-support-form"
+                data-add-url="{{ url_for('add_support_item') }}"
             >
 
                 <div class="admin-form-group">
@@ -141,7 +123,6 @@
                         name="category"
                         required
                     >
-
                         <option
                             value=""
                             selected
@@ -158,7 +139,6 @@
                             </option>
 
                         {% endfor %}
-
                     </select>
 
                 </div>
@@ -216,8 +196,17 @@
                 <div class="admin-form-actions admin-full-width">
 
                     <button
+                        type="button"
+                        class="admin-cancel-edit-button"
+                        id="admin-cancel-edit-button"
+                    >
+                        Düzenlemeyi İptal Et
+                    </button>
+
+                    <button
                         type="reset"
                         class="admin-reset-button"
+                        id="admin-reset-button"
                     >
                         Temizle
                     </button>
@@ -225,6 +214,7 @@
                     <button
                         type="submit"
                         class="admin-save-button"
+                        id="admin-save-button"
                     >
                         Kaydı Ekle
                     </button>
@@ -235,23 +225,18 @@
 
         </section>
 
-        <!-- BİLGİ TABANI TABLOSU -->
-
         <section class="admin-content">
 
             <div class="admin-content-header">
 
                 <div>
-
                     <h2>
                         📚 Bilgi Tabanı Kayıtları
                     </h2>
 
                     <p>
-                        Sistemde bulunan teknik destek
-                        kayıtları
+                        Sistemde bulunan teknik destek kayıtları
                     </p>
-
                 </div>
 
             </div>
@@ -263,7 +248,6 @@
                     <table class="admin-table">
 
                         <thead>
-
                             <tr>
                                 <th>No</th>
                                 <th>Kategori</th>
@@ -272,7 +256,6 @@
                                 <th>Cevap</th>
                                 <th>İşlemler</th>
                             </tr>
-
                         </thead>
 
                         <tbody>
@@ -286,16 +269,12 @@
                                     </td>
 
                                     <td>
-
                                         <span class="admin-category-badge">
-
                                             {{ categories.get(
                                                 item.category,
                                                 item.category
                                             ) }}
-
                                         </span>
-
                                     </td>
 
                                     <td class="admin-question-cell">
@@ -303,7 +282,6 @@
                                     </td>
 
                                     <td>
-
                                         <div class="admin-keyword-list">
 
                                             {% for keyword
@@ -316,7 +294,6 @@
                                             {% endfor %}
 
                                         </div>
-
                                     </td>
 
                                     <td class="admin-answer-cell">
@@ -330,28 +307,39 @@
                                             <button
                                                 type="button"
                                                 class="admin-edit-button"
-                                                disabled
-                                                title="Sonraki adımda aktif olacak"
+                                                title="Kaydı düzenle"
+                                                data-edit-url="{{ url_for(
+                                                    'edit_support_item',
+                                                    item_index=loop.index0
+                                                ) }}"
+                                                data-category="{{ item.category }}"
+                                                data-question="{{ item.question }}"
+                                                data-keywords="{{ item.keywords | join(', ') }}"
+                                                data-answer="{{ item.answer }}"
                                             >
                                                 ✏️
+                                            </button>
+
                                             <form
-    method="POST"
-    action="{{ url_for(
-        'delete_support_item',
-        item_index=loop.index0
-    ) }}"
-    onsubmit="return confirm(
-        'Bu kaydı silmek istediğinize emin misiniz?'
-    );"
->
-    <button
-        type="submit"
-        class="admin-delete-button"
-        title="Kaydı sil"
-    >
-        🗑️
-    </button>
-</form>
+                                                method="POST"
+                                                action="{{ url_for(
+                                                    'delete_support_item',
+                                                    item_index=loop.index0
+                                                ) }}"
+                                                onsubmit="return confirm(
+                                                    'Bu kaydı silmek istediğinize emin misiniz?'
+                                                );"
+                                            >
+
+                                                <button
+                                                    type="submit"
+                                                    class="admin-delete-button"
+                                                    title="Kaydı sil"
+                                                >
+                                                    🗑️
+                                                </button>
+
+                                            </form>
 
                                         </div>
 
@@ -386,6 +374,131 @@
         </section>
 
     </main>
+
+    <script>
+        const adminForm =
+            document.getElementById("admin-support-form");
+
+        const adminCategory =
+            document.getElementById("admin-category");
+
+        const adminQuestion =
+            document.getElementById("admin-question");
+
+        const adminKeywords =
+            document.getElementById("admin-keywords");
+
+        const adminAnswer =
+            document.getElementById("admin-answer");
+
+        const adminFormTitle =
+            document.getElementById("admin-form-title");
+
+        const adminFormDescription =
+            document.getElementById(
+                "admin-form-description"
+            );
+
+        const adminSaveButton =
+            document.getElementById("admin-save-button");
+
+        const adminResetButton =
+            document.getElementById("admin-reset-button");
+
+        const adminCancelEditButton =
+            document.getElementById(
+                "admin-cancel-edit-button"
+            );
+
+        const editButtons =
+            document.querySelectorAll(
+                ".admin-edit-button"
+            );
+
+
+        function resetAdminForm() {
+            adminForm.reset();
+
+            adminForm.action =
+                adminForm.dataset.addUrl;
+
+            adminFormTitle.textContent =
+                "➕ Yeni Soru Ekle";
+
+            adminFormDescription.textContent =
+                "Bilgi tabanına yeni teknik destek kaydı ekleyin.";
+
+            adminSaveButton.textContent =
+                "Kaydı Ekle";
+
+            adminCancelEditButton.style.display =
+                "none";
+        }
+
+
+        editButtons.forEach(function (button) {
+            button.addEventListener(
+                "click",
+                function () {
+                    adminForm.action =
+                        button.dataset.editUrl;
+
+                    adminCategory.value =
+                        button.dataset.category;
+
+                    adminQuestion.value =
+                        button.dataset.question;
+
+                    adminKeywords.value =
+                        button.dataset.keywords;
+
+                    adminAnswer.value =
+                        button.dataset.answer;
+
+                    adminFormTitle.textContent =
+                        "✏️ Soruyu Düzenle";
+
+                    adminFormDescription.textContent =
+                        "Seçilen teknik destek kaydını güncelleyin.";
+
+                    adminSaveButton.textContent =
+                        "Değişiklikleri Kaydet";
+
+                    adminCancelEditButton.style.display =
+                        "inline-block";
+
+                    document
+                        .getElementById("admin-form-section")
+                        .scrollIntoView({
+                            behavior: "smooth",
+                            block: "start"
+                        });
+
+                    adminQuestion.focus();
+                }
+            );
+        });
+
+
+        adminCancelEditButton.addEventListener(
+            "click",
+            resetAdminForm
+        );
+
+
+        adminResetButton.addEventListener(
+            "click",
+            function () {
+                setTimeout(
+                    resetAdminForm,
+                    0
+                );
+            }
+        );
+
+
+        resetAdminForm();
+    </script>
 
 </body>
 </html>

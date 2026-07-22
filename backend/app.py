@@ -304,15 +304,13 @@ def add_support_item():
             url_for("admin_panel")
         )
 
-    new_support_item = {
-        "category": category,
-        "question": question,
-        "keywords": keywords,
-        "answer": answer
-    }
-
     support_items.append(
-        new_support_item
+        {
+            "category": category,
+            "question": question,
+            "keywords": keywords,
+            "answer": answer
+        }
     )
 
     if not save_questions(support_items):
@@ -335,7 +333,133 @@ def add_support_item():
     )
 
 
-@app.route("/admin/delete/<int:item_index>", methods=["POST"])
+@app.route(
+    "/admin/edit/<int:item_index>",
+    methods=["POST"]
+)
+def edit_support_item(item_index):
+    support_items = load_questions()
+
+    if item_index < 0 or item_index >= len(support_items):
+        flash(
+            "Düzenlemek istediğiniz kayıt bulunamadı.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_panel")
+        )
+
+    category = request.form.get(
+        "category",
+        ""
+    ).strip()
+
+    question = request.form.get(
+        "question",
+        ""
+    ).strip()
+
+    keywords_text = request.form.get(
+        "keywords",
+        ""
+    ).strip()
+
+    answer = request.form.get(
+        "answer",
+        ""
+    ).strip()
+
+    if category not in CATEGORIES:
+        flash(
+            "Lütfen geçerli bir kategori seçin.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_panel")
+        )
+
+    if not question:
+        flash(
+            "Soru alanı boş bırakılamaz.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_panel")
+        )
+
+    if not answer:
+        flash(
+            "Cevap alanı boş bırakılamaz.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_panel")
+        )
+
+    keywords = [
+        keyword.strip()
+        for keyword in keywords_text.split(",")
+        if keyword.strip()
+    ]
+
+    if not keywords:
+        keywords = [question]
+
+    question_lower = question.lower()
+
+    duplicate_question = any(
+        index != item_index
+        and str(
+            item.get("question", "")
+        ).strip().lower() == question_lower
+        for index, item in enumerate(support_items)
+    )
+
+    if duplicate_question:
+        flash(
+            "Bu soru başka bir kayıtta zaten bulunuyor.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_panel")
+        )
+
+    support_items[item_index] = {
+        "category": category,
+        "question": question,
+        "keywords": keywords,
+        "answer": answer
+    }
+
+    if not save_questions(support_items):
+        flash(
+            "Kayıt düzenlenirken bir hata oluştu.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_panel")
+        )
+
+    flash(
+        "Teknik destek kaydı başarıyla güncellendi.",
+        "success"
+    )
+
+    return redirect(
+        url_for("admin_panel")
+    )
+
+
+@app.route(
+    "/admin/delete/<int:item_index>",
+    methods=["POST"]
+)
 def delete_support_item(item_index):
     support_items = load_questions()
 

@@ -844,3 +844,38 @@ body.dark-mode .no-history-result {
         width: 100%;
     }
 }
+/* ADMIN DÜZENLEME ÖZELLİĞİ */
+
+.admin-edit-button:not(:disabled) {
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.admin-edit-button:not(:disabled):hover {
+    background: #fde68a;
+    transform: translateY(-1px);
+}
+
+.admin-cancel-edit-button {
+    display: none;
+    padding: 13px 20px;
+    border: none;
+    border-radius: 10px;
+    background: #fee2e2;
+    color: #991b1b;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 800;
+    transition: 0.2s;
+}
+
+.admin-cancel-edit-button:hover {
+    background: #fecaca;
+    transform: translateY(-1px);
+}
+
+@media screen and (max-width: 750px) {
+    .admin-cancel-edit-button {
+        width: 100%;
+    }
+}
