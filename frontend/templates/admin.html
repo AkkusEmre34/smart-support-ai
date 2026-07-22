@@ -334,16 +334,24 @@
                                                 title="Sonraki adımda aktif olacak"
                                             >
                                                 ✏️
-                                            </button>
-
-                                            <button
-                                                type="button"
-                                                class="admin-delete-button"
-                                                disabled
-                                                title="Sonraki adımda aktif olacak"
-                                            >
-                                                🗑️
-                                            </button>
+                                            <form
+    method="POST"
+    action="{{ url_for(
+        'delete_support_item',
+        item_index=loop.index0
+    ) }}"
+    onsubmit="return confirm(
+        'Bu kaydı silmek istediğinize emin misiniz?'
+    );"
+>
+    <button
+        type="submit"
+        class="admin-delete-button"
+        title="Kaydı sil"
+    >
+        🗑️
+    </button>
+</form>
 
                                         </div>
 

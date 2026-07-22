@@ -58,10 +58,6 @@ init_database()
 
 
 def save_questions(support_items):
-    """
-    Bilgi tabanı kayıtlarını questions.json dosyasına kaydeder.
-    """
-
     try:
         QUESTIONS_FILE.parent.mkdir(
             parents=True,
@@ -331,6 +327,47 @@ def add_support_item():
 
     flash(
         "Yeni teknik destek sorusu başarıyla eklendi.",
+        "success"
+    )
+
+    return redirect(
+        url_for("admin_panel")
+    )
+
+
+@app.route("/admin/delete/<int:item_index>", methods=["POST"])
+def delete_support_item(item_index):
+    support_items = load_questions()
+
+    if item_index < 0 or item_index >= len(support_items):
+        flash(
+            "Silmek istediğiniz kayıt bulunamadı.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_panel")
+        )
+
+    deleted_item = support_items.pop(item_index)
+
+    if not save_questions(support_items):
+        flash(
+            "Kayıt silinirken bir hata oluştu.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_panel")
+        )
+
+    flash(
+        "'{}' başarıyla silindi.".format(
+            deleted_item.get(
+                "question",
+                "Kayıt"
+            )
+        ),
         "success"
     )
 
