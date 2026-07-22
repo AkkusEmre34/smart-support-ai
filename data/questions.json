@@ -2,112 +2,191 @@
     {
         "category": "internet",
         "question": "Wi-Fi bağlantım kesiliyor",
-        "keywords": ["wifi", "wi-fi", "bağlantı", "kesiliyor", "internet kopuyor"],
+        "keywords": [
+            "wifi",
+            "wi-fi",
+            "bağlantı",
+            "kesiliyor",
+            "internet kopuyor"
+        ],
         "answer": "Modemi kapatıp yaklaşık 30 saniye bekledikten sonra yeniden açın. Bilgisayarınızdaki Wi-Fi ağını unutup tekrar bağlanmayı ve ağ sürücüsünü güncellemeyi deneyin."
     },
     {
         "category": "internet",
         "question": "İnternetim çok yavaş",
-        "keywords": ["internet yavaş", "hız düşük", "yavaş internet", "indirme yavaş"],
+        "keywords": [
+            "internet yavaş",
+            "hız düşük",
+            "yavaş internet",
+            "indirme yavaş"
+        ],
         "answer": "Modemi yeniden başlatın, arka planda indirme yapan uygulamaları kapatın ve mümkünse hız testi gerçekleştirin. Sorun devam ederse internet sağlayıcınızla görüşün."
     },
     {
         "category": "internet",
         "question": "Bilgisayarım Wi-Fi ağına bağlanmıyor",
-        "keywords": ["wifi bağlanmıyor", "ağa bağlanmıyor", "kablosuz ağ", "internet bağlanmıyor"],
+        "keywords": [
+            "wifi bağlanmıyor",
+            "ağa bağlanmıyor",
+            "kablosuz ağ",
+            "internet bağlanmıyor"
+        ],
         "answer": "Uçak modunun kapalı olduğunu kontrol edin. Wi-Fi ağını unutup şifreyi yeniden girin. Ağ bağdaştırıcısını devre dışı bırakıp tekrar etkinleştirmeyi deneyin."
     },
     {
         "category": "ses",
         "question": "Bilgisayardan ses gelmiyor",
-        "keywords": ["ses gelmiyor", "ses yok", "hoparlör çalışmıyor"],
+        "keywords": [
+            "ses gelmiyor",
+            "ses yok",
+            "hoparlör çalışmıyor"
+        ],
         "answer": "Ses seviyesinin kapalı olmadığını, doğru çıkış cihazının seçildiğini ve hoparlör bağlantısının sağlam olduğunu kontrol edin. Ses sürücüsünü güncellemeyi de deneyin."
     },
     {
         "category": "ses",
         "question": "Kulaklıktan ses gelmiyor",
-        "keywords": ["kulaklık", "kulaklıktan ses", "kulaklık çalışmıyor"],
+        "keywords": [
+            "kulaklık",
+            "kulaklıktan ses",
+            "kulaklık çalışmıyor"
+        ],
         "answer": "Kulaklığı başka bir girişte deneyin ve Windows ses ayarlarında çıkış cihazı olarak kulaklığın seçildiğini kontrol edin."
     },
     {
         "category": "ses",
         "question": "Ses çok düşük geliyor",
-        "keywords": ["ses düşük", "ses az", "ses seviyesi"],
+        "keywords": [
+            "ses düşük",
+            "ses az",
+            "ses seviyesi"
+        ],
         "answer": "Windows ses seviyesini, uygulamanın kendi ses ayarını ve ses karıştırıcısını kontrol edin. Ses geliştirmeleri bölümünden ses yükseltme seçeneklerini deneyebilirsiniz."
     },
     {
         "category": "yazici",
         "question": "Yazıcı çıktı vermiyor",
-        "keywords": ["yazıcı", "çıktı vermiyor", "yazdırmıyor"],
+        "keywords": [
+            "yazıcı",
+            "çıktı vermiyor",
+            "yazdırmıyor"
+        ],
         "answer": "Yazıcının açık olduğunu, kâğıt ve mürekkep bulunduğunu kontrol edin. Yazdırma kuyruğundaki bekleyen işlemleri temizleyip yazıcıyı yeniden başlatın."
     },
     {
         "category": "yazici",
         "question": "Yazıcı çevrimdışı görünüyor",
-        "keywords": ["çevrimdışı", "offline", "yazıcı bağlı değil"],
+        "keywords": [
+            "çevrimdışı",
+            "offline",
+            "yazıcı bağlı değil"
+        ],
         "answer": "Yazıcının USB veya Wi-Fi bağlantısını kontrol edin. Windows yazıcı ayarlarında çevrimdışı kullan seçeneğinin kapalı olduğundan emin olun."
     },
     {
-    "category": "mikrofon",
-    "question": "Mikrofonum çalışmıyor",
-    "keywords": [
-        "mikrofon",
-        "mikrofon çalışmıyor",
-        "sesim gitmiyor",
-        "sesimi duymuyor",
-        "karşı taraf duymuyor",
-        "karşı taraf sesimi duymuyor",
-        "konuşuyorum ama ses gitmiyor",
-        "mikrofondan ses gitmiyor"
-    ],
-    "answer": "Mikrofon bağlantısını ve giriş seviyesini kontrol edin. Windows gizlilik ayarlarından uygulamaların mikrofona erişmesine izin verildiğinden emin olun. Ayrıca doğru mikrofonun giriş cihazı olarak seçildiğini kontrol edin."
+        "category": "mikrofon",
+        "question": "Mikrofonum çalışmıyor",
+        "keywords": [
+            "mikrofon",
+            "mikrofon çalışmıyor",
+            "sesim gitmiyor",
+            "sesimi duymuyor",
+            "karşı taraf duymuyor",
+            "karşı taraf sesimi duymuyor",
+            "konuşuyorum ama ses gitmiyor",
+            "mikrofondan ses gitmiyor"
+        ],
+        "answer": "Mikrofon bağlantısını ve giriş seviyesini kontrol edin. Windows gizlilik ayarlarından uygulamaların mikrofona erişmesine izin verildiğinden emin olun. Ayrıca doğru mikrofonun giriş cihazı olarak seçildiğini kontrol edin."
     },
     {
         "category": "mikrofon",
         "question": "Mikrofon sesi çok az geliyor",
-        "keywords": ["mikrofon düşük", "sesim az", "mikrofon sesi"],
+        "keywords": [
+            "mikrofon düşük",
+            "sesim az",
+            "mikrofon sesi"
+        ],
         "answer": "Ses ayarlarında mikrofon giriş seviyesini artırın. Mikrofon güçlendirme seçeneği varsa kontrollü şekilde yükseltin."
     },
     {
         "category": "donanim",
         "question": "Bilgisayarım açılmıyor",
-        "keywords": ["bilgisayar açılmıyor", "pc açılmıyor", "güç gelmiyor"],
+        "keywords": [
+            "bilgisayar açılmıyor",
+            "pc açılmıyor",
+            "güç gelmiyor"
+        ],
         "answer": "Güç kablosunu, priz bağlantısını ve güç düğmesini kontrol edin. Dizüstü bilgisayarsa şarj cihazını çıkarıp yeniden bağlamayı deneyin."
     },
     {
         "category": "donanim",
         "question": "Bilgisayarım çok ısınıyor",
-        "keywords": ["ısınıyor", "aşırı sıcak", "fan", "ısınma"],
+        "keywords": [
+            "ısınıyor",
+            "aşırı sıcak",
+            "fan",
+            "ısınma"
+        ],
         "answer": "Hava kanallarını temizleyin, bilgisayarı sert bir zeminde kullanın ve yoğun çalışan uygulamaları kontrol edin. Fanların düzgün çalıştığından emin olun."
     },
     {
         "category": "usb",
         "question": "USB cihazım algılanmıyor",
-        "keywords": ["usb", "algılanmıyor", "usb görünmüyor"],
+        "keywords": [
+            "usb",
+            "algılanmıyor",
+            "usb görünmüyor"
+        ],
         "answer": "USB cihazını farklı bir porta takın ve başka bir bilgisayarda deneyin. Aygıt Yöneticisi üzerinden USB sürücülerini güncelleyin."
     },
     {
         "category": "usb",
         "question": "USB bellek açılmıyor",
-        "keywords": ["usb bellek", "flash bellek", "bellek açılmıyor"],
+        "keywords": [
+            "usb bellek",
+            "flash bellek",
+            "bellek açılmıyor"
+        ],
         "answer": "Disk Yönetimi ekranından USB belleğin görünüp görünmediğini kontrol edin. Sürücü harfi atanmamışsa yeni bir sürücü harfi tanımlayın."
     },
     {
         "category": "kamera",
         "question": "Kameram açılmıyor",
-        "keywords": ["kamera", "kamera açılmıyor", "webcam"],
+        "keywords": [
+            "kamera",
+            "kamera açılmıyor",
+            "webcam"
+        ],
         "answer": "Kamera gizlilik ayarlarını kontrol edin ve uygulamanın kameraya erişimine izin verin. Kamera sürücüsünü Aygıt Yöneticisi üzerinden güncelleyin."
     },
     {
         "category": "kamera",
         "question": "Kamera görüntüsü siyah",
-        "keywords": ["kamera siyah", "siyah ekran", "görüntü gelmiyor"],
+        "keywords": [
+            "kamera siyah",
+            "siyah ekran",
+            "görüntü gelmiyor"
+        ],
         "answer": "Kamerayı kullanan diğer uygulamaları kapatın. Kamera uygulamasını yeniden başlatın ve kamera kapağının kapalı olmadığını kontrol edin."
     },
     {
         "category": "diger",
         "question": "Bir uygulama açılmıyor",
-        "keywords": ["uygulama açılmıyor", "program açılmıyor", "hata veriyor"],
+        "keywords": [
+            "uygulama açılmıyor",
+            "program açılmıyor",
+            "hata veriyor"
+        ],
         "answer": "Uygulamayı yönetici olarak çalıştırmayı, bilgisayarı yeniden başlatmayı ve uygulamayı güncellemeyi deneyin."
+    },
+    {
+        "category": "diger",
+        "question": "Bluetooth cihazım bağlanmıyor",
+        "keywords": [
+            "bluetooth",
+            "bağlanmıyor",
+            "cihaz görünmüyor"
+        ],
+        "answer": "Bluetooth özelliğinin açık olduğunu kontrol edin. Cihazı kaldırıp yeniden eşleştirin ve Bluetooth sürücüsünü güncelleyin."
     }
 ]
