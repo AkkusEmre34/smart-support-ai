@@ -2,9 +2,16 @@ from collections import Counter
 from pathlib import Path
 from uuid import uuid4
 
-from flask import Flask, redirect, render_template, request, session, url_for
+from flask import Flask, redirect, render_template, request, url_for
 
 from ai_engine import find_answer, get_questions_by_category
+from database import (
+    add_chat,
+    clear_all_chats,
+    get_all_chats,
+    init_database,
+    update_feedback
+)
 
 
 PROJECT_FOLDER = Path(__file__).resolve().parent.parent
@@ -28,40 +35,7 @@ app = Flask(
     static_folder=str(STATIC_FOLDER)
 )
 
-app.secret_key = "smart-support-ai-secret-key"
-
-
-def prepare_chat_history():
-    chat_history = session.get("chat_history", [])
-    history_changed = False
-
-    for chat in chat_history:
-        if "id" not in chat:
-            chat["id"] = str(uuid4())
-            history_changed = True
-
-        if "feedback" not in chat:
-            chat["feedback"] = None
-            history_changed = True
-
-        if "category" not in chat:
-            chat["category"] = "diger"
-            history_changed = True
-
-        if "category_name" not in chat:
-            category = chat.get("category", "diger")
-
-            chat["category_name"] = CATEGORIES.get(
-                category,
-                CATEGORIES["diger"]
-            )
-
-            history_changed = True
-
-    if history_changed:
-        session["chat_history"] = chat_history
-
-    return chat_history
+init_database()
 
 
 def calculate_statistics(chat_history):
@@ -99,7 +73,6 @@ def calculate_statistics(chat_history):
             most_used_category_key,
             CATEGORIES["diger"]
         )
-
     else:
         most_used_category_name = "Henüz veri yok"
         most_used_category_count = 0
@@ -128,8 +101,6 @@ def calculate_statistics(chat_history):
 
 @app.route("/", methods=["GET", "POST"])
 def home():
-    chat_history = prepare_chat_history()
-
     if request.method == "POST":
         question = request.form.get("question", "").strip()
         category = request.form.get("category", "").strip()
@@ -139,21 +110,19 @@ def home():
 
         if question:
             answer = find_answer(question, category)
+            chat_id = str(uuid4())
 
-            chat_history.append(
-                {
-                    "id": str(uuid4()),
-                    "question": question,
-                    "answer": answer,
-                    "category": category,
-                    "category_name": CATEGORIES[category],
-                    "feedback": None
-                }
+            add_chat(
+                chat_id=chat_id,
+                question=question,
+                answer=answer,
+                category=category,
+                category_name=CATEGORIES[category]
             )
 
-            session["chat_history"] = chat_history
-
         return redirect(url_for("home"))
+
+    chat_history = get_all_chats()
 
     category_questions = {
         category_key: get_questions_by_category(category_key)
@@ -178,31 +147,29 @@ def save_feedback(chat_id):
     if feedback not in ["positive", "negative"]:
         return redirect(url_for("home"))
 
-    chat_history = prepare_chat_history()
+    update_feedback(chat_id, feedback)
 
-    for chat in chat_history:
-        if chat.get("id") == chat_id:
-            chat["feedback"] = feedback
-            break
-
-    session["chat_history"] = chat_history
-
-    return redirect(url_for("home") + f"#chat-{chat_id}")
+    return redirect(
+        url_for("home") + f"#chat-{chat_id}"
+    )
 
 
 @app.route("/clear-history", methods=["POST"])
 def clear_history():
-    session["chat_history"] = []
+    clear_all_chats()
 
     return redirect(url_for("home"))
 
 
 if __name__ == "__main__":
     print("HTML klasörü:", TEMPLATE_FOLDER)
-
     print(
         "index.html var mı:",
         (TEMPLATE_FOLDER / "index.html").exists()
+    )
+    print(
+        "Veritabanı hazır:",
+        (PROJECT_FOLDER / "data" / "smart_support.db").exists()
     )
 
     app.run(debug=True)
