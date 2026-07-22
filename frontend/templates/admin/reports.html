@@ -1,0 +1,251 @@
+{% extends "admin/base.html" %}
+
+
+{% block title %}
+    Raporlar | Smart Support AI
+{% endblock %}
+
+
+{% block page_title %}
+    Raporlar
+{% endblock %}
+
+
+{% block page_description %}
+    Sistem istatistiklerini inceleyin ve raporları dışa aktarın.
+{% endblock %}
+
+
+{% block content %}
+
+    <section class="admin-dashboard">
+
+        <article class="admin-dashboard-card">
+
+            <h3>
+                💬 Toplam Soru
+            </h3>
+
+            <strong>
+                {{ statistics.total_questions }}
+            </strong>
+
+            <small>
+                Sisteme sorulan soru
+            </small>
+
+        </article>
+
+
+        <article class="admin-dashboard-card">
+
+            <h3>
+                👍 Olumlu
+            </h3>
+
+            <strong>
+                {{ statistics.positive_feedback }}
+            </strong>
+
+            <small>
+                Olumlu geri bildirim
+            </small>
+
+        </article>
+
+
+        <article class="admin-dashboard-card">
+
+            <h3>
+                👎 Olumsuz
+            </h3>
+
+            <strong>
+                {{ statistics.negative_feedback }}
+            </strong>
+
+            <small>
+                Olumsuz geri bildirim
+            </small>
+
+        </article>
+
+
+        <article class="admin-dashboard-card">
+
+            <h3>
+                🕒 Değerlendirilmemiş
+            </h3>
+
+            <strong>
+                {{ statistics.unanswered_feedback }}
+            </strong>
+
+            <small>
+                Geri bildirim bekliyor
+            </small>
+
+        </article>
+
+    </section>
+
+
+    <section class="admin-report-grid">
+
+        <article class="admin-report-card">
+
+            <div class="admin-report-icon">
+                📊
+            </div>
+
+            <h2>
+                Excel Raporu
+            </h2>
+
+            <p>
+                Soru geçmişini, kategorileri ve geri bildirim
+                sonuçlarını Excel dosyası olarak dışa aktarın.
+            </p>
+
+            <button
+                type="button"
+                class="admin-report-button"
+                disabled
+            >
+                Yakında Eklenecek
+            </button>
+
+        </article>
+
+
+        <article class="admin-report-card">
+
+            <div class="admin-report-icon">
+                📄
+            </div>
+
+            <h2>
+                PDF Raporu
+            </h2>
+
+            <p>
+                Sistem istatistiklerini düzenli bir PDF raporu
+                olarak oluşturun.
+            </p>
+
+            <button
+                type="button"
+                class="admin-report-button"
+                disabled
+            >
+                Yakında Eklenecek
+            </button>
+
+        </article>
+
+
+        <article class="admin-report-card">
+
+            <div class="admin-report-icon">
+                🗃️
+            </div>
+
+            <h2>
+                Veritabanı Yedeği
+            </h2>
+
+            <p>
+                Smart Support AI veritabanının güvenli bir
+                yedek kopyasını oluşturun.
+            </p>
+
+            <button
+                type="button"
+                class="admin-report-button"
+                disabled
+            >
+                Yakında Eklenecek
+            </button>
+
+        </article>
+
+    </section>
+
+
+    <section class="admin-content">
+
+        <div class="admin-content-header">
+
+            <div>
+
+                <h2>
+                    📈 Kategori İstatistikleri
+                </h2>
+
+                <p>
+                    Kullanıcıların en çok soru sorduğu kategoriler
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="admin-table-wrapper">
+
+            <table class="admin-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Sıra</th>
+                        <th>Kategori</th>
+                        <th>Soru Sayısı</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for item in statistics.category_statistics %}
+
+                        <tr>
+
+                            <td>
+                                {{ loop.index }}
+                            </td>
+
+                            <td>
+                                <span class="admin-category-badge">
+                                    {{ item.name }}
+                                </span>
+                            </td>
+
+                            <td>
+                                {{ item.count }}
+                            </td>
+
+                        </tr>
+
+                    {% else %}
+
+                        <tr>
+
+                            <td colspan="3">
+                                Henüz kategori istatistiği bulunmuyor.
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+{% endblock %}

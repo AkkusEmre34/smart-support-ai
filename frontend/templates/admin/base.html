@@ -27,7 +27,10 @@
 
     <div class="admin-layout">
 
-        <aside class="admin-sidebar">
+        <aside
+            class="admin-sidebar"
+            id="admin-sidebar"
+        >
 
             <div class="admin-sidebar-brand">
 
@@ -138,8 +141,7 @@
 
                 <a
                     href="{{ url_for('admin_logout') }}"
-                    class="admin-sidebar-link
-                    admin-sidebar-logout"
+                    class="admin-sidebar-link admin-sidebar-logout"
                 >
                     <span class="admin-sidebar-icon">
                         🚪
@@ -255,14 +257,15 @@
         document.addEventListener(
             "DOMContentLoaded",
             function () {
+
                 const menuButton =
                     document.getElementById(
                         "admin-mobile-menu-button"
                     );
 
                 const sidebar =
-                    document.querySelector(
-                        ".admin-sidebar"
+                    document.getElementById(
+                        "admin-sidebar"
                     );
 
                 const overlay =
@@ -272,6 +275,11 @@
 
 
                 function openSidebar() {
+
+                    if (!sidebar || !overlay) {
+                        return;
+                    }
+
                     sidebar.classList.add(
                         "admin-sidebar-open"
                     );
@@ -283,6 +291,11 @@
 
 
                 function closeSidebar() {
+
+                    if (!sidebar || !overlay) {
+                        return;
+                    }
+
                     sidebar.classList.remove(
                         "admin-sidebar-open"
                     );
@@ -294,11 +307,14 @@
 
 
                 if (menuButton) {
+
                     menuButton.addEventListener(
                         "click",
                         function () {
+
                             if (
-                                sidebar.classList.contains(
+                                sidebar
+                                && sidebar.classList.contains(
                                     "admin-sidebar-open"
                                 )
                             ) {
@@ -312,6 +328,7 @@
 
 
                 if (overlay) {
+
                     overlay.addEventListener(
                         "click",
                         closeSidebar
@@ -322,6 +339,7 @@
                 window.addEventListener(
                     "resize",
                     function () {
+
                         if (window.innerWidth > 900) {
                             closeSidebar();
                         }
@@ -330,6 +348,7 @@
             }
         );
     </script>
+
 
     {% block scripts %}
     {% endblock %}

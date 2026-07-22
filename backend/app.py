@@ -32,9 +32,23 @@ from database import (
 
 PROJECT_FOLDER = Path(__file__).resolve().parent.parent
 
-TEMPLATE_FOLDER = PROJECT_FOLDER / "frontend" / "templates"
-STATIC_FOLDER = PROJECT_FOLDER / "frontend" / "static"
-QUESTIONS_FILE = PROJECT_FOLDER / "data" / "questions.json"
+TEMPLATE_FOLDER = (
+    PROJECT_FOLDER
+    / "frontend"
+    / "templates"
+)
+
+STATIC_FOLDER = (
+    PROJECT_FOLDER
+    / "frontend"
+    / "static"
+)
+
+QUESTIONS_FILE = (
+    PROJECT_FOLDER
+    / "data"
+    / "questions.json"
+)
 
 
 CATEGORIES = {
@@ -62,48 +76,65 @@ ADMIN_PASSWORD = os.getenv(
 
 app = Flask(
     __name__,
-    template_folder=str(TEMPLATE_FOLDER),
-    static_folder=str(STATIC_FOLDER)
+    template_folder=str(
+        TEMPLATE_FOLDER
+    ),
+    static_folder=str(
+        STATIC_FOLDER
+    )
 )
+
 
 app.secret_key = os.getenv(
     "SECRET_KEY",
     "smart-support-ai-gizli-anahtar"
 )
 
+
 init_database()
 
 
 def admin_login_required(view_function):
     """
-    Yönetici girişi yapılmadan korunan sayfalara
-    erişilmesini engeller.
+    Yönetici girişi yapılmadan korunan
+    admin sayfalarına erişimi engeller.
     """
 
     @wraps(view_function)
     def wrapped_view(*args, **kwargs):
-        if not session.get("admin_logged_in"):
+
+        if not session.get(
+            "admin_logged_in"
+        ):
+
             flash(
-                "Yönetici paneline erişmek için giriş yapmalısınız.",
+                "Yönetici paneline erişmek için "
+                "giriş yapmalısınız.",
                 "error"
             )
 
             return redirect(
-                url_for("admin_login")
+                url_for(
+                    "admin_login"
+                )
             )
 
-        return view_function(*args, **kwargs)
+        return view_function(
+            *args,
+            **kwargs
+        )
 
     return wrapped_view
 
 
 def save_questions(support_items):
     """
-    Bilgi tabanındaki kayıtları questions.json
-    dosyasına kaydeder.
+    Bilgi tabanındaki kayıtları
+    questions.json dosyasına kaydeder.
     """
 
     try:
+
         QUESTIONS_FILE.parent.mkdir(
             parents=True,
             exist_ok=True
@@ -113,6 +144,7 @@ def save_questions(support_items):
             "w",
             encoding="utf-8"
         ) as file:
+
             json.dump(
                 support_items,
                 file,
@@ -123,8 +155,10 @@ def save_questions(support_items):
         return True
 
     except OSError as error:
+
         print(
-            "Bilgi tabanı kaydedilirken hata oluştu:",
+            "Bilgi tabanı kaydedilirken "
+            "hata oluştu:",
             error
         )
 
@@ -132,49 +166,79 @@ def save_questions(support_items):
 
 
 def calculate_statistics(chat_history):
-    total_questions = len(chat_history)
+    """
+    Sohbet geçmişinden yönetici paneli
+    istatistiklerini hesaplar.
+    """
+
+    total_questions = len(
+        chat_history
+    )
 
     positive_feedback = sum(
         1
         for chat in chat_history
-        if chat.get("feedback") == "positive"
+        if chat.get(
+            "feedback"
+        ) == "positive"
     )
 
     negative_feedback = sum(
         1
         for chat in chat_history
-        if chat.get("feedback") == "negative"
+        if chat.get(
+            "feedback"
+        ) == "negative"
     )
 
     unanswered_feedback = sum(
         1
         for chat in chat_history
-        if not chat.get("feedback")
+        if not chat.get(
+            "feedback"
+        )
     )
 
     category_counter = Counter(
-        chat.get("category", "diger")
+        chat.get(
+            "category",
+            "diger"
+        )
         for chat in chat_history
     )
 
     if category_counter:
+
         (
             most_used_category_key,
             most_used_category_count
-        ) = category_counter.most_common(1)[0]
+        ) = category_counter.most_common(
+            1
+        )[0]
 
-        most_used_category_name = CATEGORIES.get(
-            most_used_category_key,
-            CATEGORIES["diger"]
+        most_used_category_name = (
+            CATEGORIES.get(
+                most_used_category_key,
+                CATEGORIES["diger"]
+            )
         )
 
     else:
-        most_used_category_name = "Henüz veri yok"
+
+        most_used_category_name = (
+            "Henüz veri yok"
+        )
+
         most_used_category_count = 0
+
 
     category_statistics = []
 
-    for category_key, category_name in CATEGORIES.items():
+    for (
+        category_key,
+        category_name
+    ) in CATEGORIES.items():
+
         category_statistics.append(
             {
                 "key": category_key,
@@ -186,20 +250,47 @@ def calculate_statistics(chat_history):
             }
         )
 
+
     return {
-        "total_questions": total_questions,
-        "positive_feedback": positive_feedback,
-        "negative_feedback": negative_feedback,
-        "unanswered_feedback": unanswered_feedback,
-        "most_used_category_name": most_used_category_name,
-        "most_used_category_count": most_used_category_count,
-        "category_statistics": category_statistics
+        "total_questions": (
+            total_questions
+        ),
+        "positive_feedback": (
+            positive_feedback
+        ),
+        "negative_feedback": (
+            negative_feedback
+        ),
+        "unanswered_feedback": (
+            unanswered_feedback
+        ),
+        "most_used_category_name": (
+            most_used_category_name
+        ),
+        "most_used_category_count": (
+            most_used_category_count
+        ),
+        "category_statistics": (
+            category_statistics
+        )
     }
 
 
-@app.route("/", methods=["GET", "POST"])
+@app.route(
+    "/",
+    methods=[
+        "GET",
+        "POST"
+    ]
+)
 def home():
+    """
+    Kullanıcıların teknik destek sorusu
+    sorduğu ana sayfa.
+    """
+
     if request.method == "POST":
+
         question = request.form.get(
             "question",
             ""
@@ -210,62 +301,99 @@ def home():
             ""
         ).strip()
 
+
         if category not in CATEGORIES:
+
             category = "diger"
 
+
         if question:
+
             answer = find_answer(
                 question,
                 category
             )
 
-            chat_id = str(uuid4())
+            chat_id = str(
+                uuid4()
+            )
 
             add_chat(
                 chat_id=chat_id,
                 question=question,
                 answer=answer,
                 category=category,
-                category_name=CATEGORIES[category]
+                category_name=(
+                    CATEGORIES[
+                        category
+                    ]
+                )
             )
 
+
         return redirect(
-            url_for("home")
+            url_for(
+                "home"
+            )
         )
+
 
     chat_history = get_all_chats()
 
+
     category_questions = {
-        category_key: get_questions_by_category(
-            category_key
-        )
-        for category_key in CATEGORIES
+
+        category_key:
+            get_questions_by_category(
+                category_key
+            )
+
+        for category_key
+        in CATEGORIES
     }
+
 
     statistics = calculate_statistics(
         chat_history
     )
 
+
     return render_template(
         "index.html",
         chat_history=chat_history,
         categories=CATEGORIES,
-        category_questions=category_questions,
+        category_questions=(
+            category_questions
+        ),
         statistics=statistics
     )
 
 
 @app.route(
     "/admin/login",
-    methods=["GET", "POST"]
+    methods=[
+        "GET",
+        "POST"
+    ]
 )
 def admin_login():
-    if session.get("admin_logged_in"):
+    """
+    Yönetici giriş sayfası.
+    """
+
+    if session.get(
+        "admin_logged_in"
+    ):
+
         return redirect(
-            url_for("admin_panel")
+            url_for(
+                "admin_panel"
+            )
         )
 
+
     if request.method == "POST":
+
         username = request.form.get(
             "username",
             ""
@@ -276,76 +404,194 @@ def admin_login():
             ""
         )
 
+
         if (
             username == ADMIN_USERNAME
             and password == ADMIN_PASSWORD
         ):
+
             session.clear()
 
-            session["admin_logged_in"] = True
-            session["admin_username"] = username
+            session[
+                "admin_logged_in"
+            ] = True
+
+            session[
+                "admin_username"
+            ] = username
+
 
             flash(
-                "Yönetici paneline başarıyla giriş yaptınız.",
+                "Yönetici paneline başarıyla "
+                "giriş yaptınız.",
                 "success"
             )
 
+
             return redirect(
-                url_for("admin_panel")
+                url_for(
+                    "admin_panel"
+                )
             )
+
 
         flash(
             "Kullanıcı adı veya şifre yanlış.",
             "error"
         )
 
+
     return render_template(
         "admin_login.html"
     )
 
 
-@app.route("/admin/logout")
+@app.route(
+    "/admin/logout"
+)
 def admin_logout():
+    """
+    Yönetici oturumunu kapatır.
+    """
+
     session.clear()
+
 
     flash(
         "Yönetici hesabından çıkış yapıldı.",
         "success"
     )
 
+
     return redirect(
-        url_for("admin_login")
+        url_for(
+            "admin_login"
+        )
     )
 
-@app.route("/admin")
+
+@app.route(
+    "/admin"
+)
 @admin_login_required
 def admin_panel():
+    """
+    Yönetici dashboard sayfası.
+    """
+
     support_items = load_questions()
 
     chat_history = get_all_chats()
 
-    statistics = calculate_statistics(chat_history)
+    statistics = calculate_statistics(
+        chat_history
+    )
+
 
     return render_template(
-        "admin.html",
-        support_items=support_items,
+        "admin/dashboard.html",
+        active_page="dashboard",
         categories=CATEGORIES,
-        total_items=len(support_items),
+        total_items=len(
+            support_items
+        ),
+        statistics=statistics,
         admin_username=session.get(
             "admin_username",
             "admin"
-        ),
-        statistics=statistics
+        )
     )
 
+
+@app.route(
+    "/admin/knowledge"
+)
+@admin_login_required
+def admin_knowledge():
+    """
+    Bilgi tabanı kayıtlarının bulunduğu
+    yönetici sayfası.
+    """
+
+    support_items = load_questions()
+
+
+    return render_template(
+        "admin/knowledge.html",
+        active_page="knowledge",
+        support_items=support_items,
+        categories=CATEGORIES,
+        total_items=len(
+            support_items
+        ),
+        admin_username=session.get(
+            "admin_username",
+            "admin"
+        )
+    )
+
+
+@app.route(
+    "/admin/reports"
+)
+@admin_login_required
+def admin_reports():
+    """
+    Sistem raporlarının ve kategori
+    istatistiklerinin bulunduğu sayfa.
+    """
+
+    chat_history = get_all_chats()
+
+    statistics = calculate_statistics(
+        chat_history
+    )
+
+
+    return render_template(
+        "admin/reports.html",
+        active_page="reports",
+        categories=CATEGORIES,
+        statistics=statistics,
+        admin_username=session.get(
+            "admin_username",
+            "admin"
+        )
+    )
+
+
+@app.route(
+    "/admin/settings"
+)
+@admin_login_required
+def admin_settings():
+    """
+    Yönetici ve sistem ayarları sayfası.
+    """
+
+    return render_template(
+        "admin/settings.html",
+        active_page="settings",
+        admin_username=session.get(
+            "admin_username",
+            "admin"
+        )
+    )
 
 
 @app.route(
     "/admin/add",
-    methods=["POST"]
+    methods=[
+        "POST"
+    ]
 )
 @admin_login_required
 def add_support_item():
+    """
+    Bilgi tabanına yeni teknik destek
+    kaydı ekler.
+    """
+
     category = request.form.get(
         "category",
         ""
@@ -366,65 +612,105 @@ def add_support_item():
         ""
     ).strip()
 
+
     if category not in CATEGORIES:
+
         flash(
             "Lütfen geçerli bir kategori seçin.",
             "error"
         )
 
         return redirect(
-            url_for("admin_panel")
+            url_for(
+                "admin_knowledge"
+            )
         )
 
+
     if not question:
+
         flash(
             "Soru alanı boş bırakılamaz.",
             "error"
         )
 
         return redirect(
-            url_for("admin_panel")
+            url_for(
+                "admin_knowledge"
+            )
         )
 
+
     if not answer:
+
         flash(
             "Cevap alanı boş bırakılamaz.",
             "error"
         )
 
         return redirect(
-            url_for("admin_panel")
+            url_for(
+                "admin_knowledge"
+            )
         )
 
+
     keywords = [
+
         keyword.strip()
-        for keyword in keywords_text.split(",")
+
+        for keyword
+        in keywords_text.split(
+            ","
+        )
+
         if keyword.strip()
     ]
 
+
     if not keywords:
-        keywords = [question]
+
+        keywords = [
+            question
+        ]
+
 
     support_items = load_questions()
 
-    question_lower = question.lower()
-
-    duplicate_question = any(
-        str(
-            item.get("question", "")
-        ).strip().lower() == question_lower
-        for item in support_items
+    question_lower = (
+        question.lower()
     )
 
+
+    duplicate_question = any(
+
+        str(
+            item.get(
+                "question",
+                ""
+            )
+        ).strip().lower()
+        == question_lower
+
+        for item
+        in support_items
+    )
+
+
     if duplicate_question:
+
         flash(
-            "Bu soru bilgi tabanında zaten bulunuyor.",
+            "Bu soru bilgi tabanında "
+            "zaten bulunuyor.",
             "error"
         )
 
         return redirect(
-            url_for("admin_panel")
+            url_for(
+                "admin_knowledge"
+            )
         )
+
 
     support_items.append(
         {
@@ -435,43 +721,73 @@ def add_support_item():
         }
     )
 
-    if not save_questions(support_items):
+
+    if not save_questions(
+        support_items
+    ):
+
         flash(
             "Kayıt eklenirken bir hata oluştu.",
             "error"
         )
 
         return redirect(
-            url_for("admin_panel")
+            url_for(
+                "admin_knowledge"
+            )
         )
 
+
     flash(
-        "Yeni teknik destek sorusu başarıyla eklendi.",
+        "Yeni teknik destek sorusu "
+        "başarıyla eklendi.",
         "success"
     )
 
+
     return redirect(
-        url_for("admin_panel")
+        url_for(
+            "admin_knowledge"
+        )
     )
 
 
 @app.route(
     "/admin/edit/<int:item_index>",
-    methods=["POST"]
+    methods=[
+        "POST"
+    ]
 )
 @admin_login_required
 def edit_support_item(item_index):
+    """
+    Bilgi tabanındaki teknik destek
+    kaydını günceller.
+    """
+
     support_items = load_questions()
 
-    if item_index < 0 or item_index >= len(support_items):
+
+    if (
+        item_index < 0
+        or item_index
+        >= len(
+            support_items
+        )
+    ):
+
         flash(
-            "Düzenlemek istediğiniz kayıt bulunamadı.",
+            "Düzenlemek istediğiniz kayıt "
+            "bulunamadı.",
             "error"
         )
 
         return redirect(
-            url_for("admin_panel")
+            url_for(
+                "admin_knowledge"
+            )
         )
+
 
     category = request.form.get(
         "category",
@@ -493,123 +809,209 @@ def edit_support_item(item_index):
         ""
     ).strip()
 
+
     if category not in CATEGORIES:
+
         flash(
             "Lütfen geçerli bir kategori seçin.",
             "error"
         )
 
         return redirect(
-            url_for("admin_panel")
+            url_for(
+                "admin_knowledge"
+            )
         )
 
+
     if not question:
+
         flash(
             "Soru alanı boş bırakılamaz.",
             "error"
         )
 
         return redirect(
-            url_for("admin_panel")
+            url_for(
+                "admin_knowledge"
+            )
         )
 
+
     if not answer:
+
         flash(
             "Cevap alanı boş bırakılamaz.",
             "error"
         )
 
         return redirect(
-            url_for("admin_panel")
+            url_for(
+                "admin_knowledge"
+            )
         )
 
+
     keywords = [
+
         keyword.strip()
-        for keyword in keywords_text.split(",")
+
+        for keyword
+        in keywords_text.split(
+            ","
+        )
+
         if keyword.strip()
     ]
 
+
     if not keywords:
-        keywords = [question]
 
-    question_lower = question.lower()
+        keywords = [
+            question
+        ]
 
-    duplicate_question = any(
-        index != item_index
-        and str(
-            item.get("question", "")
-        ).strip().lower() == question_lower
-        for index, item in enumerate(support_items)
+
+    question_lower = (
+        question.lower()
     )
 
+
+    duplicate_question = any(
+
+        index != item_index
+
+        and str(
+            item.get(
+                "question",
+                ""
+            )
+        ).strip().lower()
+        == question_lower
+
+        for (
+            index,
+            item
+        ) in enumerate(
+            support_items
+        )
+    )
+
+
     if duplicate_question:
+
         flash(
-            "Bu soru başka bir kayıtta zaten bulunuyor.",
+            "Bu soru başka bir kayıtta "
+            "zaten bulunuyor.",
             "error"
         )
 
         return redirect(
-            url_for("admin_panel")
+            url_for(
+                "admin_knowledge"
+            )
         )
 
-    support_items[item_index] = {
+
+    support_items[
+        item_index
+    ] = {
         "category": category,
         "question": question,
         "keywords": keywords,
         "answer": answer
     }
 
-    if not save_questions(support_items):
+
+    if not save_questions(
+        support_items
+    ):
+
         flash(
-            "Kayıt düzenlenirken bir hata oluştu.",
+            "Kayıt düzenlenirken "
+            "bir hata oluştu.",
             "error"
         )
 
         return redirect(
-            url_for("admin_panel")
+            url_for(
+                "admin_knowledge"
+            )
         )
 
+
     flash(
-        "Teknik destek kaydı başarıyla güncellendi.",
+        "Teknik destek kaydı "
+        "başarıyla güncellendi.",
         "success"
     )
 
+
     return redirect(
-        url_for("admin_panel")
+        url_for(
+            "admin_knowledge"
+        )
     )
 
 
 @app.route(
     "/admin/delete/<int:item_index>",
-    methods=["POST"]
+    methods=[
+        "POST"
+    ]
 )
 @admin_login_required
 def delete_support_item(item_index):
+    """
+    Bilgi tabanındaki teknik destek
+    kaydını siler.
+    """
+
     support_items = load_questions()
 
-    if item_index < 0 or item_index >= len(support_items):
+
+    if (
+        item_index < 0
+        or item_index
+        >= len(
+            support_items
+        )
+    ):
+
         flash(
-            "Silmek istediğiniz kayıt bulunamadı.",
+            "Silmek istediğiniz kayıt "
+            "bulunamadı.",
             "error"
         )
 
         return redirect(
-            url_for("admin_panel")
+            url_for(
+                "admin_knowledge"
+            )
         )
+
 
     deleted_item = support_items.pop(
         item_index
     )
 
-    if not save_questions(support_items):
+
+    if not save_questions(
+        support_items
+    ):
+
         flash(
-            "Kayıt silinirken bir hata oluştu.",
+            "Kayıt silinirken "
+            "bir hata oluştu.",
             "error"
         )
 
         return redirect(
-            url_for("admin_panel")
+            url_for(
+                "admin_knowledge"
+            )
         )
+
 
     flash(
         "'{}' başarıyla silindi.".format(
@@ -621,36 +1023,54 @@ def delete_support_item(item_index):
         "success"
     )
 
+
     return redirect(
-        url_for("admin_panel")
+        url_for(
+            "admin_knowledge"
+        )
     )
 
 
 @app.route(
     "/feedback/<chat_id>",
-    methods=["POST"]
+    methods=[
+        "POST"
+    ]
 )
 def save_feedback(chat_id):
+    """
+    Kullanıcının olumlu veya olumsuz
+    geri bildirimini kaydeder.
+    """
+
     feedback = request.form.get(
         "feedback",
         ""
     ).strip()
 
+
     if feedback not in [
         "positive",
         "negative"
     ]:
+
         return redirect(
-            url_for("home")
+            url_for(
+                "home"
+            )
         )
+
 
     update_feedback(
         chat_id,
         feedback
     )
 
+
     return redirect(
-        url_for("home")
+        url_for(
+            "home"
+        )
         + "#chat-"
         + chat_id
     )
@@ -658,17 +1078,27 @@ def save_feedback(chat_id):
 
 @app.route(
     "/clear-history",
-    methods=["POST"]
+    methods=[
+        "POST"
+    ]
 )
 def clear_history():
+    """
+    Kullanıcı sohbet geçmişini temizler.
+    """
+
     clear_all_chats()
 
+
     return redirect(
-        url_for("home")
+        url_for(
+            "home"
+        )
     )
 
 
 if __name__ == "__main__":
+
     print(
         "HTML klasörü:",
         TEMPLATE_FOLDER
@@ -683,18 +1113,55 @@ if __name__ == "__main__":
     )
 
     print(
-        "admin.html var mı:",
-        (
-            TEMPLATE_FOLDER
-            / "admin.html"
-        ).exists()
-    )
-
-    print(
         "admin_login.html var mı:",
         (
             TEMPLATE_FOLDER
             / "admin_login.html"
+        ).exists()
+    )
+
+    print(
+        "admin/base.html var mı:",
+        (
+            TEMPLATE_FOLDER
+            / "admin"
+            / "base.html"
+        ).exists()
+    )
+
+    print(
+        "admin/dashboard.html var mı:",
+        (
+            TEMPLATE_FOLDER
+            / "admin"
+            / "dashboard.html"
+        ).exists()
+    )
+
+    print(
+        "admin/knowledge.html var mı:",
+        (
+            TEMPLATE_FOLDER
+            / "admin"
+            / "knowledge.html"
+        ).exists()
+    )
+
+    print(
+        "admin/reports.html var mı:",
+        (
+            TEMPLATE_FOLDER
+            / "admin"
+            / "reports.html"
+        ).exists()
+    )
+
+    print(
+        "admin/settings.html var mı:",
+        (
+            TEMPLATE_FOLDER
+            / "admin"
+            / "settings.html"
         ).exists()
     )
 
@@ -706,6 +1173,7 @@ if __name__ == "__main__":
             / "smart_support.db"
         ).exists()
     )
+
 
     app.run(
         debug=True

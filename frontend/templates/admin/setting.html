@@ -1,0 +1,335 @@
+{% extends "admin/base.html" %}
+
+
+{% block title %}
+    Ayarlar | Smart Support AI
+{% endblock %}
+
+
+{% block page_title %}
+    Ayarlar
+{% endblock %}
+
+
+{% block page_description %}
+    Yönetici hesabını ve sistem ayarlarını yönetin.
+{% endblock %}
+
+
+{% block content %}
+
+    <section class="admin-settings-grid">
+
+        <article class="admin-settings-card">
+
+            <div class="admin-settings-card-header">
+
+                <div class="admin-settings-icon">
+                    👤
+                </div>
+
+                <div>
+
+                    <h2>
+                        Yönetici Hesabı
+                    </h2>
+
+                    <p>
+                        Aktif yönetici hesabının bilgileri
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="admin-settings-information">
+
+                <div class="admin-settings-row">
+
+                    <span>
+                        Kullanıcı adı
+                    </span>
+
+                    <strong>
+                        {{ admin_username }}
+                    </strong>
+
+                </div>
+
+
+                <div class="admin-settings-row">
+
+                    <span>
+                        Yetki
+                    </span>
+
+                    <strong>
+                        Yönetici
+                    </strong>
+
+                </div>
+
+
+                <div class="admin-settings-row">
+
+                    <span>
+                        Oturum durumu
+                    </span>
+
+                    <strong class="admin-status-active">
+                        Aktif
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </article>
+
+
+        <article class="admin-settings-card">
+
+            <div class="admin-settings-card-header">
+
+                <div class="admin-settings-icon">
+                    🔐
+                </div>
+
+                <div>
+
+                    <h2>
+                        Şifre Değiştir
+                    </h2>
+
+                    <p>
+                        Yönetici giriş şifresini güncelleyin
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <form class="admin-settings-form">
+
+                <div class="admin-form-group admin-full-width">
+
+                    <label for="current-password">
+                        Mevcut şifre
+                    </label>
+
+                    <input
+                        type="password"
+                        id="current-password"
+                        placeholder="Mevcut şifrenizi yazın"
+                        disabled
+                    >
+
+                </div>
+
+
+                <div class="admin-form-group admin-full-width">
+
+                    <label for="new-password">
+                        Yeni şifre
+                    </label>
+
+                    <input
+                        type="password"
+                        id="new-password"
+                        placeholder="Yeni şifrenizi yazın"
+                        disabled
+                    >
+
+                </div>
+
+
+                <div class="admin-form-group admin-full-width">
+
+                    <label for="new-password-repeat">
+                        Yeni şifre tekrar
+                    </label>
+
+                    <input
+                        type="password"
+                        id="new-password-repeat"
+                        placeholder="Yeni şifrenizi tekrar yazın"
+                        disabled
+                    >
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="admin-save-button"
+                    disabled
+                >
+                    Yakında Eklenecek
+                </button>
+
+            </form>
+
+        </article>
+
+
+        <article class="admin-settings-card">
+
+            <div class="admin-settings-card-header">
+
+                <div class="admin-settings-icon">
+                    🗄️
+                </div>
+
+                <div>
+
+                    <h2>
+                        Veritabanı Yönetimi
+                    </h2>
+
+                    <p>
+                        Sistem verilerini yönetin
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="admin-setting-action">
+
+                <div>
+
+                    <h3>
+                        Veritabanını Yedekle
+                    </h3>
+
+                    <p>
+                        Tüm soru ve geri bildirim kayıtlarının
+                        yedeğini oluşturur.
+                    </p>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="admin-secondary-button"
+                    disabled
+                >
+                    Yakında
+                </button>
+
+            </div>
+
+
+            <div class="admin-setting-action">
+
+                <div>
+
+                    <h3>
+                        Sohbet Geçmişini Temizle
+                    </h3>
+
+                    <p>
+                        Kullanıcıların eski sohbet kayıtlarını siler.
+                    </p>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="admin-danger-button"
+                    disabled
+                >
+                    Yakında
+                </button>
+
+            </div>
+
+        </article>
+
+
+        <article class="admin-settings-card">
+
+            <div class="admin-settings-card-header">
+
+                <div class="admin-settings-icon">
+                    ℹ️
+                </div>
+
+                <div>
+
+                    <h2>
+                        Sistem Bilgileri
+                    </h2>
+
+                    <p>
+                        Uygulamanın teknik bilgileri
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="admin-settings-information">
+
+                <div class="admin-settings-row">
+
+                    <span>
+                        Uygulama
+                    </span>
+
+                    <strong>
+                        Smart Support AI
+                    </strong>
+
+                </div>
+
+
+                <div class="admin-settings-row">
+
+                    <span>
+                        Backend
+                    </span>
+
+                    <strong>
+                        Flask
+                    </strong>
+
+                </div>
+
+
+                <div class="admin-settings-row">
+
+                    <span>
+                        Veritabanı
+                    </span>
+
+                    <strong>
+                        SQLite
+                    </strong>
+
+                </div>
+
+
+                <div class="admin-settings-row">
+
+                    <span>
+                        Yapay zekâ yöntemi
+                    </span>
+
+                    <strong>
+                        TF-IDF
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </article>
+
+    </section>
+
+{% endblock %}

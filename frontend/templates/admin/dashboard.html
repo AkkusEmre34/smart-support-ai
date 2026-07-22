@@ -1,0 +1,384 @@
+{% extends "admin/base.html" %}
+
+
+{% block title %}
+    Dashboard | Smart Support AI
+{% endblock %}
+
+
+{% block head %}
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/chart.js"
+    ></script>
+
+{% endblock %}
+
+
+{% block page_title %}
+    Dashboard
+{% endblock %}
+
+
+{% block page_description %}
+    Sistem kullanımını, geri bildirimleri ve kategori dağılımını inceleyin.
+{% endblock %}
+
+
+{% block content %}
+
+    <section class="admin-dashboard">
+
+        <article class="admin-dashboard-card">
+
+            <h3>
+                📚 Bilgi Tabanı
+            </h3>
+
+            <strong>
+                {{ total_items }}
+            </strong>
+
+            <small>
+                Hazır destek kaydı
+            </small>
+
+        </article>
+
+
+        <article class="admin-dashboard-card">
+
+            <h3>
+                💬 Toplam Soru
+            </h3>
+
+            <strong>
+                {{ statistics.total_questions }}
+            </strong>
+
+            <small>
+                Kullanıcı mesajı
+            </small>
+
+        </article>
+
+
+        <article class="admin-dashboard-card">
+
+            <h3>
+                👍 Olumlu
+            </h3>
+
+            <strong>
+                {{ statistics.positive_feedback }}
+            </strong>
+
+            <small>
+                Yararlı bulunan cevap
+            </small>
+
+        </article>
+
+
+        <article class="admin-dashboard-card">
+
+            <h3>
+                👎 Olumsuz
+            </h3>
+
+            <strong>
+                {{ statistics.negative_feedback }}
+            </strong>
+
+            <small>
+                Geliştirilmesi gereken cevap
+            </small>
+
+        </article>
+
+
+        <article class="admin-dashboard-card">
+
+            <h3>
+                ⭐ En Çok Sorulan
+            </h3>
+
+            <strong class="admin-category-value">
+                {{ statistics.most_used_category_name }}
+            </strong>
+
+            <small>
+                {{ statistics.most_used_category_count }}
+                soru
+            </small>
+
+        </article>
+
+    </section>
+
+
+    <section class="admin-chart-section">
+
+        <article class="admin-chart-card">
+
+            <div class="admin-chart-header">
+
+                <h2>
+                    📊 Kategori Dağılımı
+                </h2>
+
+                <p>
+                    Kullanıcı sorularının kategorilere göre dağılımı
+                </p>
+
+            </div>
+
+
+            <div class="admin-chart-wrapper">
+
+                <canvas id="categoryChart"></canvas>
+
+            </div>
+
+        </article>
+
+
+        <article class="admin-chart-card">
+
+            <div class="admin-chart-header">
+
+                <h2>
+                    🗳️ Geri Bildirim Dağılımı
+                </h2>
+
+                <p>
+                    Olumlu, olumsuz ve değerlendirilmemiş cevaplar
+                </p>
+
+            </div>
+
+
+            <div class="admin-chart-wrapper">
+
+                <canvas id="feedbackChart"></canvas>
+
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <section class="admin-dashboard-info">
+
+        <article class="admin-dashboard-info-card">
+
+            <div class="admin-dashboard-info-icon">
+                🕒
+            </div>
+
+            <div>
+
+                <h3>
+                    Değerlendirilmemiş Cevaplar
+                </h3>
+
+                <strong>
+                    {{ statistics.unanswered_feedback }}
+                </strong>
+
+                <p>
+                    Henüz olumlu veya olumsuz geri bildirim
+                    almayan cevaplar.
+                </p>
+
+            </div>
+
+        </article>
+
+
+        <article class="admin-dashboard-info-card">
+
+            <div class="admin-dashboard-info-icon">
+                🗂️
+            </div>
+
+            <div>
+
+                <h3>
+                    Toplam Kategori
+                </h3>
+
+                <strong>
+                    {{ categories | length }}
+                </strong>
+
+                <p>
+                    Bilgi tabanında kullanılan teknik destek
+                    kategorileri.
+                </p>
+
+            </div>
+
+        </article>
+
+    </section>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+    <script>
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                const categoryChartElement =
+                    document.getElementById(
+                        "categoryChart"
+                    );
+
+                const feedbackChartElement =
+                    document.getElementById(
+                        "feedbackChart"
+                    );
+
+
+                if (
+                    categoryChartElement
+                    && typeof Chart !== "undefined"
+                ) {
+
+                    new Chart(
+                        categoryChartElement,
+                        {
+                            type: "bar",
+
+                            data: {
+
+                                labels: [
+                                    {% for item in statistics.category_statistics %}
+                                        {{ item.name | tojson }},
+                                    {% endfor %}
+                                ],
+
+                                datasets: [
+                                    {
+                                        label: "Soru Sayısı",
+
+                                        data: [
+                                            {% for item in statistics.category_statistics %}
+                                                {{ item.count }},
+                                            {% endfor %}
+                                        ],
+
+                                        backgroundColor: [
+                                            "#4f46e5",
+                                            "#16a34a",
+                                            "#dc2626",
+                                            "#f59e0b",
+                                            "#0ea5e9",
+                                            "#8b5cf6",
+                                            "#14b8a6",
+                                            "#ec4899"
+                                        ],
+
+                                        borderRadius: 8,
+
+                                        maxBarThickness: 55
+                                    }
+                                ]
+                            },
+
+                            options: {
+
+                                responsive: true,
+
+                                maintainAspectRatio: false,
+
+                                plugins: {
+
+                                    legend: {
+                                        display: false
+                                    }
+                                },
+
+                                scales: {
+
+                                    y: {
+
+                                        beginAtZero: true,
+
+                                        ticks: {
+                                            precision: 0,
+                                            stepSize: 1
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    );
+                }
+
+
+                if (
+                    feedbackChartElement
+                    && typeof Chart !== "undefined"
+                ) {
+
+                    new Chart(
+                        feedbackChartElement,
+                        {
+                            type: "doughnut",
+
+                            data: {
+
+                                labels: [
+                                    "Olumlu",
+                                    "Olumsuz",
+                                    "Değerlendirilmemiş"
+                                ],
+
+                                datasets: [
+                                    {
+                                        data: [
+                                            {{ statistics.positive_feedback }},
+                                            {{ statistics.negative_feedback }},
+                                            {{ statistics.unanswered_feedback }}
+                                        ],
+
+                                        backgroundColor: [
+                                            "#22c55e",
+                                            "#ef4444",
+                                            "#f59e0b"
+                                        ],
+
+                                        borderWidth: 0
+                                    }
+                                ]
+                            },
+
+                            options: {
+
+                                responsive: true,
+
+                                maintainAspectRatio: false,
+
+                                cutout: "62%",
+
+                                plugins: {
+
+                                    legend: {
+                                        position: "bottom"
+                                    }
+                                }
+                            }
+                        }
+                    );
+                }
+            }
+        );
+    </script>
+
+{% endblock %}

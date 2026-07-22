@@ -1,0 +1,759 @@
+{% extends "admin/base.html" %}
+
+
+{% block title %}
+    Bilgi Tabanı | Smart Support AI
+{% endblock %}
+
+
+{% block page_title %}
+    Bilgi Tabanı
+{% endblock %}
+
+
+{% block page_description %}
+    Teknik destek sorularını ekleyin, düzenleyin ve silin.
+{% endblock %}
+
+
+{% block content %}
+
+    <section
+        class="admin-form-section"
+        id="admin-form-section"
+    >
+
+        <div class="admin-form-header">
+
+            <h2 id="admin-form-title">
+                ➕ Yeni Soru Ekle
+            </h2>
+
+            <p id="admin-form-description">
+                Bilgi tabanına yeni teknik destek kaydı ekleyin.
+            </p>
+
+        </div>
+
+
+        <form
+            method="POST"
+            action="{{ url_for('add_support_item') }}"
+            class="admin-add-form"
+            id="admin-support-form"
+            data-add-url="{{ url_for('add_support_item') }}"
+        >
+
+            <div class="admin-form-group">
+
+                <label for="admin-category">
+                    Kategori
+                </label>
+
+                <select
+                    id="admin-category"
+                    name="category"
+                    required
+                >
+
+                    <option
+                        value=""
+                        selected
+                        disabled
+                    >
+                        Bir kategori seçin
+                    </option>
+
+                    {% for category_key, category_name
+                        in categories.items() %}
+
+                        <option value="{{ category_key }}">
+                            {{ category_name }}
+                        </option>
+
+                    {% endfor %}
+
+                </select>
+
+            </div>
+
+
+            <div class="admin-form-group">
+
+                <label for="admin-question">
+                    Soru
+                </label>
+
+                <input
+                    type="text"
+                    id="admin-question"
+                    name="question"
+                    placeholder="Örnek: Bluetooth cihazım bağlanmıyor"
+                    required
+                >
+
+            </div>
+
+
+            <div class="admin-form-group admin-full-width">
+
+                <label for="admin-keywords">
+                    Anahtar kelimeler
+                </label>
+
+                <input
+                    type="text"
+                    id="admin-keywords"
+                    name="keywords"
+                    placeholder="bluetooth, bağlanmıyor, cihaz görünmüyor"
+                >
+
+                <small>
+                    Anahtar kelimeleri virgülle ayırın.
+                </small>
+
+            </div>
+
+
+            <div class="admin-form-group admin-full-width">
+
+                <label for="admin-answer">
+                    Çözüm
+                </label>
+
+                <textarea
+                    id="admin-answer"
+                    name="answer"
+                    placeholder="Kullanıcıya gösterilecek çözümü yazın..."
+                    required
+                ></textarea>
+
+            </div>
+
+
+            <div class="admin-form-actions admin-full-width">
+
+                <button
+                    type="button"
+                    class="admin-cancel-edit-button"
+                    id="admin-cancel-edit-button"
+                >
+                    Düzenlemeyi İptal Et
+                </button>
+
+                <button
+                    type="reset"
+                    class="admin-reset-button"
+                    id="admin-reset-button"
+                >
+                    Temizle
+                </button>
+
+                <button
+                    type="submit"
+                    class="admin-save-button"
+                    id="admin-save-button"
+                >
+                    Kaydı Ekle
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <section class="admin-content">
+
+        <div class="admin-content-header">
+
+            <div>
+
+                <h2>
+                    📚 Bilgi Tabanı Kayıtları
+                </h2>
+
+                <p>
+                    Sistemde bulunan teknik destek kayıtları
+                </p>
+
+            </div>
+
+
+            <div class="admin-filter-container">
+
+                <div class="admin-search-area">
+
+                    <label for="admin-search">
+                        Kayıtlarda ara
+                    </label>
+
+                    <input
+                        type="search"
+                        id="admin-search"
+                        class="admin-search-input"
+                        placeholder="Soru veya anahtar kelime..."
+                    >
+
+                </div>
+
+
+                <div class="admin-search-area">
+
+                    <label for="admin-category-filter">
+                        Kategori filtresi
+                    </label>
+
+                    <select
+                        id="admin-category-filter"
+                        class="admin-search-input"
+                    >
+
+                        <option value="">
+                            Tüm kategoriler
+                        </option>
+
+                        {% for category_key, category_name
+                            in categories.items() %}
+
+                            <option value="{{ category_key }}">
+                                {{ category_name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="admin-result-summary">
+
+            <span id="admin-visible-count">
+                {{ total_items }}
+            </span>
+
+            kayıt gösteriliyor.
+
+            <button
+                type="button"
+                id="admin-clear-filters"
+                class="admin-clear-filter-button"
+            >
+                Filtreleri Temizle
+            </button>
+
+        </div>
+
+
+        <div
+            class="admin-no-result"
+            id="admin-no-result"
+        >
+            Aramanızla eşleşen kayıt bulunamadı.
+        </div>
+
+
+        {% if support_items %}
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+                            <th>No</th>
+                            <th>Kategori</th>
+                            <th>Soru</th>
+                            <th>Anahtar Kelimeler</th>
+                            <th>Cevap</th>
+                            <th>İşlemler</th>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        {% for item in support_items %}
+
+                            <tr
+                                class="admin-record-row"
+                                data-category="{{ item.category }}"
+                            >
+
+                                <td class="admin-row-number">
+                                    {{ loop.index }}
+                                </td>
+
+
+                                <td>
+
+                                    <span class="admin-category-badge">
+
+                                        {{ categories.get(
+                                            item.category,
+                                            item.category
+                                        ) }}
+
+                                    </span>
+
+                                </td>
+
+
+                                <td class="admin-question-cell">
+                                    {{ item.question }}
+                                </td>
+
+
+                                <td>
+
+                                    <div class="admin-keyword-list">
+
+                                        {% for keyword
+                                            in item.keywords %}
+
+                                            <span class="admin-keyword">
+                                                {{ keyword }}
+                                            </span>
+
+                                        {% endfor %}
+
+                                    </div>
+
+                                </td>
+
+
+                                <td class="admin-answer-cell">
+                                    {{ item.answer }}
+                                </td>
+
+
+                                <td>
+
+                                    <div class="admin-action-buttons">
+
+                                        <button
+                                            type="button"
+                                            class="admin-edit-button"
+                                            title="Kaydı düzenle"
+                                            data-edit-url="{{ url_for(
+                                                'edit_support_item',
+                                                item_index=loop.index0
+                                            ) }}"
+                                            data-category="{{ item.category }}"
+                                            data-question="{{ item.question }}"
+                                            data-keywords="{{ item.keywords | join(', ') }}"
+                                            data-answer="{{ item.answer }}"
+                                        >
+                                            ✏️
+                                        </button>
+
+
+                                        <form
+                                            method="POST"
+                                            action="{{ url_for(
+                                                'delete_support_item',
+                                                item_index=loop.index0
+                                            ) }}"
+                                            onsubmit="return confirm(
+                                                'Bu kaydı silmek istediğinize emin misiniz?'
+                                            );"
+                                        >
+
+                                            <button
+                                                type="submit"
+                                                class="admin-delete-button"
+                                                title="Kaydı sil"
+                                            >
+                                                🗑️
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="admin-empty-box">
+
+                <h3>
+                    Bilgi tabanında kayıt bulunamadı
+                </h3>
+
+                <p>
+                    Yeni soru ekleme formunu kullanın.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+    <script>
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                const adminForm =
+                    document.getElementById(
+                        "admin-support-form"
+                    );
+
+                const adminCategory =
+                    document.getElementById(
+                        "admin-category"
+                    );
+
+                const adminQuestion =
+                    document.getElementById(
+                        "admin-question"
+                    );
+
+                const adminKeywords =
+                    document.getElementById(
+                        "admin-keywords"
+                    );
+
+                const adminAnswer =
+                    document.getElementById(
+                        "admin-answer"
+                    );
+
+                const adminFormTitle =
+                    document.getElementById(
+                        "admin-form-title"
+                    );
+
+                const adminFormDescription =
+                    document.getElementById(
+                        "admin-form-description"
+                    );
+
+                const adminSaveButton =
+                    document.getElementById(
+                        "admin-save-button"
+                    );
+
+                const adminResetButton =
+                    document.getElementById(
+                        "admin-reset-button"
+                    );
+
+                const adminCancelEditButton =
+                    document.getElementById(
+                        "admin-cancel-edit-button"
+                    );
+
+                const editButtons =
+                    document.querySelectorAll(
+                        ".admin-edit-button"
+                    );
+
+                const adminSearch =
+                    document.getElementById(
+                        "admin-search"
+                    );
+
+                const categoryFilter =
+                    document.getElementById(
+                        "admin-category-filter"
+                    );
+
+                const clearFiltersButton =
+                    document.getElementById(
+                        "admin-clear-filters"
+                    );
+
+                const adminRows =
+                    document.querySelectorAll(
+                        ".admin-record-row"
+                    );
+
+                const adminNoResult =
+                    document.getElementById(
+                        "admin-no-result"
+                    );
+
+                const visibleCount =
+                    document.getElementById(
+                        "admin-visible-count"
+                    );
+
+
+                function resetAdminForm() {
+
+                    if (!adminForm) {
+                        return;
+                    }
+
+                    adminForm.reset();
+
+                    adminForm.action =
+                        adminForm.dataset.addUrl;
+
+                    adminFormTitle.textContent =
+                        "➕ Yeni Soru Ekle";
+
+                    adminFormDescription.textContent =
+                        "Bilgi tabanına yeni teknik destek kaydı ekleyin.";
+
+                    adminSaveButton.textContent =
+                        "Kaydı Ekle";
+
+                    adminCancelEditButton.style.display =
+                        "none";
+                }
+
+
+                function updateRowNumbers() {
+
+                    let number = 1;
+
+                    adminRows.forEach(
+                        function (row) {
+
+                            if (row.style.display !== "none") {
+
+                                const numberCell =
+                                    row.querySelector(
+                                        ".admin-row-number"
+                                    );
+
+                                if (numberCell) {
+                                    numberCell.textContent =
+                                        number;
+                                }
+
+                                number += 1;
+                            }
+                        }
+                    );
+                }
+
+
+                function filterRecords() {
+
+                    const searchValue =
+                        adminSearch
+                            ? adminSearch.value
+                                .toLocaleLowerCase(
+                                    "tr-TR"
+                                )
+                                .trim()
+                            : "";
+
+                    const selectedCategory =
+                        categoryFilter
+                            ? categoryFilter.value
+                            : "";
+
+                    let visibleRowCount = 0;
+
+
+                    adminRows.forEach(
+                        function (row) {
+
+                            const rowText =
+                                row.textContent
+                                    .toLocaleLowerCase(
+                                        "tr-TR"
+                                    );
+
+                            const rowCategory =
+                                row.dataset.category || "";
+
+                            const matchesSearch =
+                                rowText.includes(
+                                    searchValue
+                                );
+
+                            const matchesCategory =
+                                selectedCategory === ""
+                                || rowCategory
+                                    === selectedCategory;
+
+                            const isVisible =
+                                matchesSearch
+                                && matchesCategory;
+
+                            row.style.display =
+                                isVisible
+                                    ? ""
+                                    : "none";
+
+                            if (isVisible) {
+                                visibleRowCount += 1;
+                            }
+                        }
+                    );
+
+
+                    if (visibleCount) {
+
+                        visibleCount.textContent =
+                            visibleRowCount;
+                    }
+
+
+                    if (adminNoResult) {
+
+                        adminNoResult.style.display =
+                            visibleRowCount === 0
+                            && adminRows.length > 0
+                                ? "block"
+                                : "none";
+                    }
+
+
+                    updateRowNumbers();
+                }
+
+
+                editButtons.forEach(
+                    function (button) {
+
+                        button.addEventListener(
+                            "click",
+                            function () {
+
+                                if (!adminForm) {
+                                    return;
+                                }
+
+                                adminForm.action =
+                                    button.dataset.editUrl;
+
+                                adminCategory.value =
+                                    button.dataset.category;
+
+                                adminQuestion.value =
+                                    button.dataset.question;
+
+                                adminKeywords.value =
+                                    button.dataset.keywords;
+
+                                adminAnswer.value =
+                                    button.dataset.answer;
+
+                                adminFormTitle.textContent =
+                                    "✏️ Soruyu Düzenle";
+
+                                adminFormDescription.textContent =
+                                    "Seçilen teknik destek kaydını güncelleyin.";
+
+                                adminSaveButton.textContent =
+                                    "Değişiklikleri Kaydet";
+
+                                adminCancelEditButton.style.display =
+                                    "inline-block";
+
+                                document
+                                    .getElementById(
+                                        "admin-form-section"
+                                    )
+                                    .scrollIntoView({
+                                        behavior: "smooth",
+                                        block: "start"
+                                    });
+
+                                adminQuestion.focus();
+                            }
+                        );
+                    }
+                );
+
+
+                if (adminCancelEditButton) {
+
+                    adminCancelEditButton.addEventListener(
+                        "click",
+                        resetAdminForm
+                    );
+                }
+
+
+                if (adminResetButton) {
+
+                    adminResetButton.addEventListener(
+                        "click",
+                        function () {
+
+                            setTimeout(
+                                resetAdminForm,
+                                0
+                            );
+                        }
+                    );
+                }
+
+
+                if (adminSearch) {
+
+                    adminSearch.addEventListener(
+                        "input",
+                        filterRecords
+                    );
+                }
+
+
+                if (categoryFilter) {
+
+                    categoryFilter.addEventListener(
+                        "change",
+                        filterRecords
+                    );
+                }
+
+
+                if (clearFiltersButton) {
+
+                    clearFiltersButton.addEventListener(
+                        "click",
+                        function () {
+
+                            if (adminSearch) {
+                                adminSearch.value = "";
+                            }
+
+                            if (categoryFilter) {
+                                categoryFilter.value = "";
+                            }
+
+                            filterRecords();
+                        }
+                    );
+                }
+
+
+                resetAdminForm();
+                filterRecords();
+            }
+        );
+    </script>
+
+{% endblock %}
