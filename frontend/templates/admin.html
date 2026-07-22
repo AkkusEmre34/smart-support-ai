@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Yönetici Paneli | Smart Support AI
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body class="admin-page">
+
+    <main class="admin-container">
+
+        <header class="admin-header">
+
+            <div>
+
+                <span class="admin-label">
+                    YÖNETİCİ PANELİ
+                </span>
+
+                <h1>
+                    Smart Support AI Bilgi Tabanı
+                </h1>
+
+                <p>
+                    Teknik destek sorularını ve çözüm
+                    kayıtlarını yönetin.
+                </p>
+
+            </div>
+
+            <a
+                href="{{ url_for('home') }}"
+                class="admin-home-button"
+            >
+                ← Ana Sayfaya Dön
+            </a>
+
+        </header>
+
+        <!-- BİLDİRİMLER -->
+
+        {% with messages = get_flashed_messages(
+            with_categories=true
+        ) %}
+
+            {% if messages %}
+
+                <section class="admin-message-area">
+
+                    {% for category, message in messages %}
+
+                        <div
+                            class="admin-message
+                            admin-message-{{ category }}"
+                        >
+                            {{ message }}
+                        </div>
+
+                    {% endfor %}
+
+                </section>
+
+            {% endif %}
+
+        {% endwith %}
+
+        <!-- ÖZET -->
+
+        <section class="admin-summary">
+
+            <article class="admin-summary-card">
+
+                <span>
+                    Toplam kayıt
+                </span>
+
+                <strong>
+                    {{ total_items }}
+                </strong>
+
+            </article>
+
+            <article class="admin-summary-card">
+
+                <span>
+                    Kategori sayısı
+                </span>
+
+                <strong>
+                    {{ categories|length }}
+                </strong>
+
+            </article>
+
+        </section>
+
+        <!-- YENİ SORU EKLEME FORMU -->
+
+        <section class="admin-form-section">
+
+            <div class="admin-form-header">
+
+                <h2>
+                    ➕ Yeni Soru Ekle
+                </h2>
+
+                <p>
+                    Bilgi tabanına yeni teknik sorun ve
+                    çözüm kaydı ekleyin.
+                </p>
+
+            </div>
+
+            <form
+                method="POST"
+                action="{{ url_for('add_support_item') }}"
+                class="admin-add-form"
+            >
+
+                <div class="admin-form-group">
+
+                    <label for="admin-category">
+                        Kategori
+                    </label>
+
+                    <select
+                        id="admin-category"
+                        name="category"
+                        required
+                    >
+
+                        <option
+                            value=""
+                            selected
+                            disabled
+                        >
+                            Bir kategori seçin
+                        </option>
+
+                        {% for category_key, category_name
+                            in categories.items() %}
+
+                            <option value="{{ category_key }}">
+                                {{ category_name }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+                <div class="admin-form-group">
+
+                    <label for="admin-question">
+                        Soru
+                    </label>
+
+                    <input
+                        type="text"
+                        id="admin-question"
+                        name="question"
+                        placeholder="Örnek: Bluetooth cihazım bağlanmıyor"
+                        required
+                    >
+
+                </div>
+
+                <div class="admin-form-group admin-full-width">
+
+                    <label for="admin-keywords">
+                        Anahtar kelimeler
+                    </label>
+
+                    <input
+                        type="text"
+                        id="admin-keywords"
+                        name="keywords"
+                        placeholder="bluetooth, bağlanmıyor, cihaz görünmüyor"
+                    >
+
+                    <small>
+                        Anahtar kelimeleri virgülle ayırın.
+                    </small>
+
+                </div>
+
+                <div class="admin-form-group admin-full-width">
+
+                    <label for="admin-answer">
+                        Çözüm
+                    </label>
+
+                    <textarea
+                        id="admin-answer"
+                        name="answer"
+                        placeholder="Kullanıcıya gösterilecek çözümü yazın..."
+                        required
+                    ></textarea>
+
+                </div>
+
+                <div class="admin-form-actions admin-full-width">
+
+                    <button
+                        type="reset"
+                        class="admin-reset-button"
+                    >
+                        Temizle
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="admin-save-button"
+                    >
+                        Kaydı Ekle
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+        <!-- BİLGİ TABANI TABLOSU -->
+
+        <section class="admin-content">
+
+            <div class="admin-content-header">
+
+                <div>
+
+                    <h2>
+                        📚 Bilgi Tabanı Kayıtları
+                    </h2>
+
+                    <p>
+                        Sistemde bulunan teknik destek
+                        kayıtları
+                    </p>
+
+                </div>
+
+            </div>
+
+            {% if support_items %}
+
+                <div class="admin-table-wrapper">
+
+                    <table class="admin-table">
+
+                        <thead>
+
+                            <tr>
+                                <th>No</th>
+                                <th>Kategori</th>
+                                <th>Soru</th>
+                                <th>Anahtar Kelimeler</th>
+                                <th>Cevap</th>
+                                <th>İşlemler</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for item in support_items %}
+
+                                <tr>
+
+                                    <td>
+                                        {{ loop.index }}
+                                    </td>
+
+                                    <td>
+
+                                        <span class="admin-category-badge">
+
+                                            {{ categories.get(
+                                                item.category,
+                                                item.category
+                                            ) }}
+
+                                        </span>
+
+                                    </td>
+
+                                    <td class="admin-question-cell">
+                                        {{ item.question }}
+                                    </td>
+
+                                    <td>
+
+                                        <div class="admin-keyword-list">
+
+                                            {% for keyword
+                                                in item.keywords %}
+
+                                                <span class="admin-keyword">
+                                                    {{ keyword }}
+                                                </span>
+
+                                            {% endfor %}
+
+                                        </div>
+
+                                    </td>
+
+                                    <td class="admin-answer-cell">
+                                        {{ item.answer }}
+                                    </td>
+
+                                    <td>
+
+                                        <div class="admin-action-buttons">
+
+                                            <button
+                                                type="button"
+                                                class="admin-edit-button"
+                                                disabled
+                                                title="Sonraki adımda aktif olacak"
+                                            >
+                                                ✏️
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                class="admin-delete-button"
+                                                disabled
+                                                title="Sonraki adımda aktif olacak"
+                                            >
+                                                🗑️
+                                            </button>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <div class="admin-empty-box">
+
+                    <h3>
+                        Bilgi tabanında kayıt bulunamadı
+                    </h3>
+
+                    <p>
+                        Yeni soru ekleme formunu kullanın.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    </main>
+
+</body>
+</html>

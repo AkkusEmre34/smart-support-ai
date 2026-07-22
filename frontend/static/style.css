@@ -671,3 +671,176 @@ body.dark-mode .no-history-result {
         grid-template-columns: 1fr;
     }
 }
+/* ==================================================
+   ADMIN YENİ SORU EKLEME FORMU
+================================================== */
+
+.admin-form-section {
+    margin-bottom: 25px;
+    padding: 26px;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.admin-form-header {
+    margin-bottom: 22px;
+}
+
+.admin-form-header h2 {
+    margin: 0 0 7px;
+    color: #0f172a;
+}
+
+.admin-form-header p {
+    margin: 0;
+    color: #64748b;
+}
+
+.admin-add-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.admin-form-group {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.admin-full-width {
+    grid-column: 1 / -1;
+}
+
+.admin-form-group label {
+    margin-bottom: 8px;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.admin-form-group input,
+.admin-form-group select,
+.admin-form-group textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 2px solid #cbd5e1;
+    border-radius: 11px;
+    outline: none;
+    background: #ffffff;
+    color: #1e293b;
+    font-family: inherit;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.admin-form-group input,
+.admin-form-group select {
+    height: 48px;
+    padding: 0 13px;
+}
+
+.admin-form-group textarea {
+    min-height: 130px;
+    padding: 13px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.admin-form-group input:focus,
+.admin-form-group select:focus,
+.admin-form-group textarea:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+}
+
+.admin-form-group small {
+    margin-top: 7px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.admin-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.admin-reset-button,
+.admin-save-button {
+    padding: 13px 20px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 800;
+    transition: 0.2s;
+}
+
+.admin-reset-button {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+.admin-save-button {
+    background: #4f46e5;
+    color: #ffffff;
+}
+
+.admin-reset-button:hover,
+.admin-save-button:hover {
+    transform: translateY(-1px);
+}
+
+.admin-reset-button:hover {
+    background: #cbd5e1;
+}
+
+.admin-save-button:hover {
+    background: #4338ca;
+}
+
+/* ADMIN BİLDİRİMLERİ */
+
+.admin-message-area {
+    margin-bottom: 20px;
+}
+
+.admin-message {
+    padding: 15px 17px;
+    border-radius: 11px;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.admin-message-success {
+    border: 1px solid #86efac;
+    background: #dcfce7;
+    color: #166534;
+}
+
+.admin-message-error {
+    border: 1px solid #fca5a5;
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+@media screen and (max-width: 750px) {
+    .admin-add-form {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-full-width {
+        grid-column: auto;
+    }
+
+    .admin-form-actions {
+        flex-direction: column;
+    }
+
+    .admin-reset-button,
+    .admin-save-button {
+        width: 100%;
+    }
+}
