@@ -1,5 +1,7 @@
 import json
+import os
 from collections import Counter
+from functools import wraps
 from pathlib import Path
 from uuid import uuid4
 
@@ -9,6 +11,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    session,
     url_for
 )
 
@@ -46,18 +49,60 @@ CATEGORIES = {
 }
 
 
+ADMIN_USERNAME = os.getenv(
+    "ADMIN_USERNAME",
+    "admin"
+)
+
+ADMIN_PASSWORD = os.getenv(
+    "ADMIN_PASSWORD",
+    "smart123"
+)
+
+
 app = Flask(
     __name__,
     template_folder=str(TEMPLATE_FOLDER),
     static_folder=str(STATIC_FOLDER)
 )
 
-app.secret_key = "smart-support-ai-gizli-anahtar"
+app.secret_key = os.getenv(
+    "SECRET_KEY",
+    "smart-support-ai-gizli-anahtar"
+)
 
 init_database()
 
 
+def admin_login_required(view_function):
+    """
+    Yönetici girişi yapılmadan korunan sayfalara
+    erişilmesini engeller.
+    """
+
+    @wraps(view_function)
+    def wrapped_view(*args, **kwargs):
+        if not session.get("admin_logged_in"):
+            flash(
+                "Yönetici paneline erişmek için giriş yapmalısınız.",
+                "error"
+            )
+
+            return redirect(
+                url_for("admin_login")
+            )
+
+        return view_function(*args, **kwargs)
+
+    return wrapped_view
+
+
 def save_questions(support_items):
+    """
+    Bilgi tabanındaki kayıtları questions.json
+    dosyasına kaydeder.
+    """
+
     try:
         QUESTIONS_FILE.parent.mkdir(
             parents=True,
@@ -210,7 +255,71 @@ def home():
     )
 
 
+@app.route(
+    "/admin/login",
+    methods=["GET", "POST"]
+)
+def admin_login():
+    if session.get("admin_logged_in"):
+        return redirect(
+            url_for("admin_panel")
+        )
+
+    if request.method == "POST":
+        username = request.form.get(
+            "username",
+            ""
+        ).strip()
+
+        password = request.form.get(
+            "password",
+            ""
+        )
+
+        if (
+            username == ADMIN_USERNAME
+            and password == ADMIN_PASSWORD
+        ):
+            session.clear()
+
+            session["admin_logged_in"] = True
+            session["admin_username"] = username
+
+            flash(
+                "Yönetici paneline başarıyla giriş yaptınız.",
+                "success"
+            )
+
+            return redirect(
+                url_for("admin_panel")
+            )
+
+        flash(
+            "Kullanıcı adı veya şifre yanlış.",
+            "error"
+        )
+
+    return render_template(
+        "admin_login.html"
+    )
+
+
+@app.route("/admin/logout")
+def admin_logout():
+    session.clear()
+
+    flash(
+        "Yönetici hesabından çıkış yapıldı.",
+        "success"
+    )
+
+    return redirect(
+        url_for("admin_login")
+    )
+
+
 @app.route("/admin")
+@admin_login_required
 def admin_panel():
     support_items = load_questions()
 
@@ -218,11 +327,19 @@ def admin_panel():
         "admin.html",
         support_items=support_items,
         categories=CATEGORIES,
-        total_items=len(support_items)
+        total_items=len(support_items),
+        admin_username=session.get(
+            "admin_username",
+            "admin"
+        )
     )
 
 
-@app.route("/admin/add", methods=["POST"])
+@app.route(
+    "/admin/add",
+    methods=["POST"]
+)
+@admin_login_required
 def add_support_item():
     category = request.form.get(
         "category",
@@ -337,6 +454,7 @@ def add_support_item():
     "/admin/edit/<int:item_index>",
     methods=["POST"]
 )
+@admin_login_required
 def edit_support_item(item_index):
     support_items = load_questions()
 
@@ -460,6 +578,7 @@ def edit_support_item(item_index):
     "/admin/delete/<int:item_index>",
     methods=["POST"]
 )
+@admin_login_required
 def delete_support_item(item_index):
     support_items = load_questions()
 
@@ -473,7 +592,9 @@ def delete_support_item(item_index):
             url_for("admin_panel")
         )
 
-    deleted_item = support_items.pop(item_index)
+    deleted_item = support_items.pop(
+        item_index
+    )
 
     if not save_questions(support_items):
         flash(
@@ -561,6 +682,14 @@ if __name__ == "__main__":
         (
             TEMPLATE_FOLDER
             / "admin.html"
+        ).exists()
+    )
+
+    print(
+        "admin_login.html var mı:",
+        (
+            TEMPLATE_FOLDER
+            / "admin_login.html"
         ).exists()
     )
 

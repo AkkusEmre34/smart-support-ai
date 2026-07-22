@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Yönetici Girişi | Smart Support AI
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body class="admin-login-page">
+
+    <main class="admin-login-container">
+
+        <section class="admin-login-card">
+
+            <div class="admin-login-icon">
+                🔐
+            </div>
+
+            <h1>
+                Yönetici Girişi
+            </h1>
+
+            <p class="admin-login-description">
+                Smart Support AI bilgi tabanını yönetmek
+                için giriş yapın.
+            </p>
+
+            {% with messages = get_flashed_messages(
+                with_categories=true
+            ) %}
+
+                {% if messages %}
+
+                    <div class="admin-login-messages">
+
+                        {% for category, message in messages %}
+
+                            <div
+                                class="admin-message
+                                admin-message-{{ category }}"
+                            >
+                                {{ message }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% endif %}
+
+            {% endwith %}
+
+            <form
+                method="POST"
+                action="{{ url_for('admin_login') }}"
+                class="admin-login-form"
+            >
+
+                <div class="admin-login-form-group">
+
+                    <label for="username">
+                        Kullanıcı adı
+                    </label>
+
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="Kullanıcı adınızı yazın"
+                        autocomplete="username"
+                        required
+                    >
+
+                </div>
+
+                <div class="admin-login-form-group">
+
+                    <label for="password">
+                        Şifre
+                    </label>
+
+                    <div class="admin-password-wrapper">
+
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Şifrenizi yazın"
+                            autocomplete="current-password"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            id="show-password-button"
+                            class="show-password-button"
+                            aria-label="Şifreyi göster veya gizle"
+                        >
+                            👁️
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <button
+                    type="submit"
+                    class="admin-login-button"
+                >
+                    Giriş Yap
+                </button>
+
+            </form>
+
+            <a
+                href="{{ url_for('home') }}"
+                class="admin-login-home-link"
+            >
+                ← Ana sayfaya dön
+            </a>
+
+        </section>
+
+    </main>
+
+    <script>
+        const passwordInput =
+            document.getElementById("password");
+
+        const showPasswordButton =
+            document.getElementById(
+                "show-password-button"
+            );
+
+        showPasswordButton.addEventListener(
+            "click",
+            function () {
+                const passwordVisible =
+                    passwordInput.type === "text";
+
+                passwordInput.type =
+                    passwordVisible
+                        ? "password"
+                        : "text";
+
+                showPasswordButton.textContent =
+                    passwordVisible
+                        ? "👁️"
+                        : "🙈";
+            }
+        );
+    </script>
+
+</body>
+</html>
