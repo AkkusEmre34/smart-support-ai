@@ -22,17 +22,24 @@
         type="button"
         id="theme-button"
         class="theme-button"
+        aria-label="Açık veya koyu temaya geç"
     >
         🌙 Koyu Mod
     </button>
 
     <main class="container">
 
+        <!-- BAŞLIK -->
+
         <section class="header">
 
-            <div class="logo">🤖</div>
+            <div class="logo">
+                🤖
+            </div>
 
-            <h1>Smart Support AI</h1>
+            <h1>
+                Smart Support AI
+            </h1>
 
             <p>
                 Sorununuzun kategorisini seçin ve teknik probleminizi yazın.
@@ -41,11 +48,15 @@
 
         </section>
 
+        <!-- İSTATİSTİK PANELİ -->
+
         <section class="statistics-section">
 
             <div class="statistics-header">
 
-                <h2>📊 Sistem İstatistikleri</h2>
+                <h2>
+                    📊 Sistem İstatistikleri
+                </h2>
 
                 <p>
                     Soruların ve kullanıcı geri bildirimlerinin özeti
@@ -57,7 +68,9 @@
 
                 <article class="stat-card">
 
-                    <div class="stat-icon">💬</div>
+                    <div class="stat-icon">
+                        💬
+                    </div>
 
                     <div class="stat-content">
 
@@ -75,7 +88,9 @@
 
                 <article class="stat-card positive-stat">
 
-                    <div class="stat-icon">👍</div>
+                    <div class="stat-icon">
+                        👍
+                    </div>
 
                     <div class="stat-content">
 
@@ -93,7 +108,9 @@
 
                 <article class="stat-card negative-stat">
 
-                    <div class="stat-icon">👎</div>
+                    <div class="stat-icon">
+                        👎
+                    </div>
 
                     <div class="stat-content">
 
@@ -111,7 +128,9 @@
 
                 <article class="stat-card waiting-stat">
 
-                    <div class="stat-icon">⏳</div>
+                    <div class="stat-icon">
+                        ⏳
+                    </div>
 
                     <div class="stat-content">
 
@@ -129,7 +148,9 @@
 
                 <article class="stat-card popular-stat">
 
-                    <div class="stat-icon">⭐</div>
+                    <div class="stat-icon">
+                        ⭐
+                    </div>
 
                     <div class="stat-content">
 
@@ -180,6 +201,8 @@
             </details>
 
         </section>
+
+        <!-- SORU FORMU -->
 
         <section class="support-card">
 
@@ -267,6 +290,8 @@
 
         </section>
 
+        <!-- SOHBET GEÇMİŞİ -->
+
         {% if chat_history %}
 
             <section class="history-section">
@@ -275,10 +300,12 @@
 
                     <div>
 
-                        <h2>Sohbet Geçmişi</h2>
+                        <h2>
+                            Sohbet Geçmişi
+                        </h2>
 
                         <p>
-                            Daha önce sorduğunuz teknik sorular
+                            Önceki teknik sorularınızı arayın ve filtreleyin
                         </p>
 
                     </div>
@@ -299,6 +326,64 @@
 
                 </div>
 
+                <!-- ARAMA VE FİLTRE -->
+
+                <div class="history-tools">
+
+                    <div class="history-search-group">
+
+                        <label for="history-search">
+                            Geçmişte ara
+                        </label>
+
+                        <input
+                            type="search"
+                            id="history-search"
+                            class="history-search"
+                            placeholder="Soru veya cevap ara..."
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+                    <div class="history-filter-group">
+
+                        <label for="history-category-filter">
+                            Kategori filtrele
+                        </label>
+
+                        <select
+                            id="history-category-filter"
+                            class="history-category-filter"
+                        >
+
+                            <option value="all">
+                                Tüm kategoriler
+                            </option>
+
+                            {% for category_key, category_name in categories.items() %}
+
+                                <option value="{{ category_key }}">
+                                    {{ category_name }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <p
+                    id="no-history-result"
+                    class="no-history-result"
+                >
+                    Aramanızla eşleşen sohbet bulunamadı.
+                </p>
+
+                <!-- SOHBET KAYITLARI -->
+
                 <div class="chat-list">
 
                     {% for chat in chat_history|reverse %}
@@ -306,6 +391,8 @@
                         <article
                             class="chat-item"
                             id="chat-{{ chat.id }}"
+                            data-category="{{ chat.category }}"
+                            data-search-text="{{ chat.question }} {{ chat.answer }}"
                         >
 
                             <div class="chat-category">
@@ -320,7 +407,9 @@
 
                                 <div class="message-content">
 
-                                    <h3>Siz</h3>
+                                    <h3>
+                                        Siz
+                                    </h3>
 
                                     <p>
                                         {{ chat.question }}
@@ -338,7 +427,9 @@
 
                                 <div class="message-content">
 
-                                    <h3>Smart Support AI</h3>
+                                    <h3>
+                                        Smart Support AI
+                                    </h3>
 
                                     <p class="answer-text">
                                         {{ chat.answer }}
@@ -470,9 +561,23 @@
         const themeButton =
             document.getElementById("theme-button");
 
+        const historySearch =
+            document.getElementById("history-search");
+
+        const historyCategoryFilter =
+            document.getElementById("history-category-filter");
+
+        const noHistoryResult =
+            document.getElementById("no-history-result");
+
+        const chatItems =
+            document.querySelectorAll(".chat-item");
+
         const categoryQuestions =
             {{ category_questions | tojson }};
 
+
+        /* KATEGORİYE GÖRE ÖRNEK SORULAR */
 
         function showCategoryQuestions(category) {
             categoryExampleList.innerHTML = "";
@@ -525,20 +630,22 @@
         });
 
 
+        /* YÜKLENME ANİMASYONU */
+
         supportForm.addEventListener("submit", function (event) {
             event.preventDefault();
 
             loadingBox.style.display = "flex";
             solutionButton.disabled = true;
-
-            solutionButton.textContent =
-                "Analiz ediliyor...";
+            solutionButton.textContent = "Analiz ediliyor...";
 
             setTimeout(function () {
                 supportForm.submit();
             }, 1200);
         });
 
+
+        /* CEVABI KOPYALAMA */
 
         const copyButtons =
             document.querySelectorAll(".copy-button");
@@ -551,17 +658,14 @@
                         button.closest(".message-content");
 
                     const answerText =
-                        messageContent.querySelector(
-                            ".answer-text"
-                        );
+                        messageContent.querySelector(".answer-text");
 
                     try {
                         await navigator.clipboard.writeText(
                             answerText.textContent.trim()
                         );
 
-                        button.textContent =
-                            "✅ Kopyalandı";
+                        button.textContent = "✅ Kopyalandı";
 
                         setTimeout(function () {
                             button.textContent =
@@ -569,8 +673,7 @@
                         }, 1800);
 
                     } catch (error) {
-                        button.textContent =
-                            "Kopyalanamadı";
+                        button.textContent = "Kopyalanamadı";
 
                         setTimeout(function () {
                             button.textContent =
@@ -582,11 +685,91 @@
         });
 
 
+        /* SOHBET GEÇMİŞİNİ ARAMA VE FİLTRELEME */
+
+        function normalizeSearchText(text) {
+            return String(text)
+                .toLocaleLowerCase("tr-TR")
+                .replaceAll("ı", "i")
+                .replaceAll("ğ", "g")
+                .replaceAll("ü", "u")
+                .replaceAll("ş", "s")
+                .replaceAll("ö", "o")
+                .replaceAll("ç", "c")
+                .trim();
+        }
+
+
+        function filterChatHistory() {
+            if (!historySearch || !historyCategoryFilter) {
+                return;
+            }
+
+            const searchValue =
+                normalizeSearchText(historySearch.value);
+
+            const selectedCategory =
+                historyCategoryFilter.value;
+
+            let visibleChatCount = 0;
+
+            chatItems.forEach(function (chatItem) {
+                const chatText =
+                    normalizeSearchText(
+                        chatItem.dataset.searchText || ""
+                    );
+
+                const chatCategory =
+                    chatItem.dataset.category || "";
+
+                const searchMatches =
+                    chatText.includes(searchValue);
+
+                const categoryMatches =
+                    selectedCategory === "all"
+                    || chatCategory === selectedCategory;
+
+                const shouldShow =
+                    searchMatches && categoryMatches;
+
+                chatItem.style.display =
+                    shouldShow ? "block" : "none";
+
+                if (shouldShow) {
+                    visibleChatCount += 1;
+                }
+            });
+
+            if (noHistoryResult) {
+                noHistoryResult.style.display =
+                    visibleChatCount === 0
+                        ? "block"
+                        : "none";
+            }
+        }
+
+
+        if (historySearch) {
+            historySearch.addEventListener(
+                "input",
+                filterChatHistory
+            );
+        }
+
+
+        if (historyCategoryFilter) {
+            historyCategoryFilter.addEventListener(
+                "change",
+                filterChatHistory
+            );
+        }
+
+
+        /* KOYU MOD */
+
         function updateThemeButton() {
             const darkModeActive =
-                document.body.classList.contains(
-                    "dark-mode"
-                );
+                document.body.classList.contains("dark-mode");
 
             themeButton.textContent =
                 darkModeActive
@@ -597,14 +780,10 @@
 
         function loadSavedTheme() {
             const savedTheme =
-                localStorage.getItem(
-                    "smartSupportTheme"
-                );
+                localStorage.getItem("smartSupportTheme");
 
             if (savedTheme === "dark") {
-                document.body.classList.add(
-                    "dark-mode"
-                );
+                document.body.classList.add("dark-mode");
             }
 
             updateThemeButton();
@@ -612,14 +791,10 @@
 
 
         themeButton.addEventListener("click", function () {
-            document.body.classList.toggle(
-                "dark-mode"
-            );
+            document.body.classList.toggle("dark-mode");
 
             const darkModeActive =
-                document.body.classList.contains(
-                    "dark-mode"
-                );
+                document.body.classList.contains("dark-mode");
 
             localStorage.setItem(
                 "smartSupportTheme",
