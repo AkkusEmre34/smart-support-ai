@@ -1,7 +1,7 @@
 import json
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any , Optional , Tuple
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -162,7 +162,7 @@ def create_search_text(
 def find_exact_keyword_match(
     question: str,
     category_items: list[dict[str, Any]]
-) -> dict[str, Any] | None:
+) -> Optional[dict[str, Any]]:
     """
     Kullanıcının yazdığı soru, kayıtlı soru veya anahtar
     kelimelerle doğrudan eşleşiyorsa ilgili kaydı döndürür.
@@ -203,7 +203,7 @@ def find_exact_keyword_match(
 def find_best_tfidf_match(
     question: str,
     category_items: list[dict[str, Any]]
-) -> tuple[dict[str, Any] | None, float]:
+) -> Tuple[Optional[dict[str, Any]], float]:
     """
     TF-IDF ve cosine similarity kullanarak kullanıcının
     sorusuna en çok benzeyen teknik destek kaydını bulur.
