@@ -48,10 +48,19 @@
         "answer": "Yazıcının USB veya Wi-Fi bağlantısını kontrol edin. Windows yazıcı ayarlarında çevrimdışı kullan seçeneğinin kapalı olduğundan emin olun."
     },
     {
-        "category": "mikrofon",
-        "question": "Mikrofonum çalışmıyor",
-        "keywords": ["mikrofon", "mikrofon çalışmıyor", "sesim gitmiyor"],
-        "answer": "Mikrofon bağlantısını ve giriş seviyesini kontrol edin. Windows gizlilik ayarlarından uygulamaların mikrofona erişmesine izin verildiğinden emin olun."
+    "category": "mikrofon",
+    "question": "Mikrofonum çalışmıyor",
+    "keywords": [
+        "mikrofon",
+        "mikrofon çalışmıyor",
+        "sesim gitmiyor",
+        "sesimi duymuyor",
+        "karşı taraf duymuyor",
+        "karşı taraf sesimi duymuyor",
+        "konuşuyorum ama ses gitmiyor",
+        "mikrofondan ses gitmiyor"
+    ],
+    "answer": "Mikrofon bağlantısını ve giriş seviyesini kontrol edin. Windows gizlilik ayarlarından uygulamaların mikrofona erişmesine izin verildiğinden emin olun. Ayrıca doğru mikrofonun giriş cihazı olarak seçildiğini kontrol edin."
     },
     {
         "category": "mikrofon",
