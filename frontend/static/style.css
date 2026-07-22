@@ -1087,3 +1087,25 @@ body.dark-mode .admin-dashboard-card h3{
 body.dark-mode .admin-dashboard-card strong{
     color:#818cf8;
 }
+.admin-chart-section{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(420px,1fr));
+    gap:25px;
+    margin-bottom:35px;
+}
+
+.admin-chart-card{
+    background:#ffffff;
+    padding:25px;
+    border-radius:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+
+.admin-chart-card h2{
+    margin-bottom:20px;
+    text-align:center;
+}
+
+body.dark-mode .admin-chart-card{
+    background:#111827;
+}
