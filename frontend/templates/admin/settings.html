@@ -1,0 +1,345 @@
+{% extends "admin/base.html" %}
+
+{% block title %}
+Ayarlar
+{% endblock %}
+
+{% block page_title %}
+Sistem Ayarları
+{% endblock %}
+
+{% block page_description %}
+Yönetici güvenliğini, verileri ve sistem bilgilerini yönetin.
+{% endblock %}
+
+{% block content %}
+
+<section class="admin-settings-grid">
+
+    <article class="admin-content admin-settings-card">
+
+        <div class="admin-content-header">
+
+            <div>
+
+                <h2>
+                    Yönetici Şifresi
+                </h2>
+
+                <p>
+                    Yönetici paneli giriş şifresini değiştirin.
+                </p>
+
+            </div>
+
+        </div>
+
+        <form
+            action="{{ url_for('change_admin_password') }}"
+            method="POST"
+            class="admin-form"
+        >
+
+            <div class="admin-form-group">
+
+                <label for="current_password">
+                    Mevcut Şifre
+                </label>
+
+                <input
+                    type="password"
+                    id="current_password"
+                    name="current_password"
+                    placeholder="Mevcut şifrenizi yazın"
+                    required
+                >
+
+            </div>
+
+            <div class="admin-form-group">
+
+                <label for="new_password">
+                    Yeni Şifre
+                </label>
+
+                <input
+                    type="password"
+                    id="new_password"
+                    name="new_password"
+                    placeholder="En az 6 karakter"
+                    minlength="6"
+                    required
+                >
+
+            </div>
+
+            <div class="admin-form-group">
+
+                <label for="confirm_password">
+                    Yeni Şifre Tekrar
+                </label>
+
+                <input
+                    type="password"
+                    id="confirm_password"
+                    name="confirm_password"
+                    placeholder="Yeni şifrenizi tekrar yazın"
+                    minlength="6"
+                    required
+                >
+
+            </div>
+
+            <button
+                type="submit"
+                class="admin-save-button"
+            >
+                Şifreyi Değiştir
+            </button>
+
+        </form>
+
+    </article>
+
+
+    <article class="admin-content admin-settings-card">
+
+        <div class="admin-content-header">
+
+            <div>
+
+                <h2>
+                    Bilgi Tabanı Yedeği
+                </h2>
+
+                <p>
+                    Teknik destek soru ve cevaplarını dışa veya içe aktarın.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="admin-settings-action">
+
+            <div>
+
+                <h3>
+                    JSON Yedeğini İndir
+                </h3>
+
+                <p>
+                    Mevcut bilgi tabanını JSON dosyası olarak indirin.
+                </p>
+
+            </div>
+
+            <a
+                href="{{ url_for('export_knowledge_base') }}"
+                class="admin-save-button admin-settings-link"
+            >
+                JSON İndir
+            </a>
+
+        </div>
+
+        <hr class="admin-settings-divider">
+
+        <form
+            action="{{ url_for('import_knowledge_base') }}"
+            method="POST"
+            enctype="multipart/form-data"
+            class="admin-form"
+            onsubmit="return confirm('Mevcut bilgi tabanı seçilen JSON dosyasıyla değiştirilecek. Devam edilsin mi?');"
+        >
+
+            <div class="admin-form-group">
+
+                <label for="knowledge_file">
+                    JSON Yedeği Yükle
+                </label>
+
+                <input
+                    type="file"
+                    id="knowledge_file"
+                    name="knowledge_file"
+                    accept=".json,application/json"
+                    required
+                >
+
+                <small>
+                    Yüklenen dosya mevcut bilgi tabanının yerine geçer.
+                </small>
+
+            </div>
+
+            <button
+                type="submit"
+                class="admin-save-button"
+            >
+                Bilgi Tabanını Geri Yükle
+            </button>
+
+        </form>
+
+    </article>
+
+
+    <article class="admin-content admin-settings-card">
+
+        <div class="admin-content-header">
+
+            <div>
+
+                <h2>
+                    Sistem Bilgileri
+                </h2>
+
+                <p>
+                    Uygulamanın çalıştığı teknik ortam.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="admin-system-list">
+
+            <div class="admin-system-item">
+
+                <span>
+                    Python
+                </span>
+
+                <strong>
+                    {{ system_versions.python }}
+                </strong>
+
+            </div>
+
+            <div class="admin-system-item">
+
+                <span>
+                    Flask
+                </span>
+
+                <strong>
+                    {{ system_versions.flask }}
+                </strong>
+
+            </div>
+
+            <div class="admin-system-item">
+
+                <span>
+                    SQLite
+                </span>
+
+                <strong>
+                    {{ system_versions.sqlite }}
+                </strong>
+
+            </div>
+
+            <div class="admin-system-item">
+
+                <span>
+                    İşletim Sistemi
+                </span>
+
+                <strong>
+                    {{ system_versions.operating_system }}
+                </strong>
+
+            </div>
+
+            <div class="admin-system-item">
+
+                <span>
+                    Bilgi Tabanı Kaydı
+                </span>
+
+                <strong>
+                    {{ total_knowledge_items }}
+                </strong>
+
+            </div>
+
+            <div class="admin-system-item">
+
+                <span>
+                    Sohbet Kaydı
+                </span>
+
+                <strong>
+                    {{ total_chat_records }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </article>
+
+
+    <article class="admin-content admin-settings-card admin-danger-card">
+
+        <div class="admin-content-header">
+
+            <div>
+
+                <h2>
+                    Tehlikeli İşlemler
+                </h2>
+
+                <p>
+                    Bu bölümde yapılan işlemler geri alınamaz.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="admin-danger-box">
+
+            <div>
+
+                <h3>
+                    Sohbet Geçmişini Temizle
+                </h3>
+
+                <p>
+                    Sistemde kayıtlı tüm kullanıcı sorularını,
+                    cevaplarını ve geri bildirimleri siler.
+                </p>
+
+            </div>
+
+            <form
+                action="{{ url_for('admin_clear_chat_history') }}"
+                method="POST"
+                onsubmit="return confirm('Tüm sohbet geçmişi kalıcı olarak silinecek. Emin misiniz?');"
+            >
+
+                <input
+                    type="hidden"
+                    name="confirmation"
+                    value="confirm"
+                >
+
+                <button
+                    type="submit"
+                    class="admin-danger-button"
+                >
+                    Sohbet Geçmişini Sil
+                </button>
+
+            </form>
+
+        </div>
+
+    </article>
+
+</section>
+
+{% endblock %}

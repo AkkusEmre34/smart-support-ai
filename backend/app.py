@@ -1,9 +1,12 @@
 import json
 import os
+import platform
+import sqlite3
 
 from collections import Counter
 from datetime import datetime
 from functools import wraps
+from importlib.metadata import PackageNotFoundError, version
 from io import BytesIO
 from pathlib import Path
 from uuid import uuid4
@@ -83,6 +86,12 @@ DATABASE_FILE = (
     / "smart_support.db"
 )
 
+SETTINGS_FILE = (
+    PROJECT_FOLDER
+    / "data"
+    / "settings.json"
+)
+
 
 # ==================================================
 # KATEGORİLER
@@ -101,15 +110,15 @@ CATEGORIES = {
 
 
 # ==================================================
-# YÖNETİCİ BİLGİLERİ
+# VARSAYILAN YÖNETİCİ BİLGİLERİ
 # ==================================================
 
-ADMIN_USERNAME = os.getenv(
+DEFAULT_ADMIN_USERNAME = os.getenv(
     "ADMIN_USERNAME",
     "admin"
 )
 
-ADMIN_PASSWORD = os.getenv(
+DEFAULT_ADMIN_PASSWORD = os.getenv(
     "ADMIN_PASSWORD",
     "smart123"
 )
@@ -131,7 +140,7 @@ app.secret_key = os.getenv(
 )
 
 
-# Veritabanı tablolarını hazırlar.
+# Veritabanı tablolarını oluşturur.
 init_database()
 
 
@@ -169,7 +178,7 @@ def admin_login_required(view_function):
 
 def save_questions(support_items):
     """
-    Bilgi tabanı kayıtlarını questions.json
+    Bilgi tabanını questions.json
     dosyasına kaydeder.
     """
 
@@ -204,6 +213,271 @@ def save_questions(support_items):
         return False
 
 
+def save_settings(settings):
+    """
+    Yönetici ayarlarını settings.json
+    dosyasına kaydeder.
+    """
+
+    try:
+
+        SETTINGS_FILE.parent.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        with SETTINGS_FILE.open(
+            "w",
+            encoding="utf-8"
+        ) as file:
+
+            json.dump(
+                settings,
+                file,
+                ensure_ascii=False,
+                indent=4
+            )
+
+        return True
+
+    except OSError as error:
+
+        print(
+            "Ayarlar kaydedilemedi:",
+            error
+        )
+
+        return False
+
+
+def load_settings():
+    """
+    Yönetici kullanıcı adı ve şifresini
+    settings.json dosyasından okur.
+    """
+
+    default_settings = {
+        "admin_username": DEFAULT_ADMIN_USERNAME,
+        "admin_password": DEFAULT_ADMIN_PASSWORD
+    }
+
+    if not SETTINGS_FILE.exists():
+
+        save_settings(
+            default_settings
+        )
+
+        return default_settings
+
+    try:
+
+        with SETTINGS_FILE.open(
+            "r",
+            encoding="utf-8"
+        ) as file:
+
+            settings = json.load(
+                file
+            )
+
+        if not isinstance(settings, dict):
+
+            save_settings(
+                default_settings
+            )
+
+            return default_settings
+
+        settings.setdefault(
+            "admin_username",
+            DEFAULT_ADMIN_USERNAME
+        )
+
+        settings.setdefault(
+            "admin_password",
+            DEFAULT_ADMIN_PASSWORD
+        )
+
+        return settings
+
+    except (
+        OSError,
+        json.JSONDecodeError
+    ) as error:
+
+        print(
+            "Ayarlar okunamadı:",
+            error
+        )
+
+        return default_settings
+
+
+def get_system_versions():
+    """
+    Python, Flask ve SQLite sürümlerini
+    döndürür.
+    """
+
+    try:
+
+        flask_version = version(
+            "Flask"
+        )
+
+    except PackageNotFoundError:
+
+        flask_version = (
+            "Tespit edilemedi"
+        )
+
+    return {
+        "python": platform.python_version(),
+        "flask": flask_version,
+        "sqlite": sqlite3.sqlite_version,
+        "operating_system": platform.system(),
+        "platform": platform.platform()
+    }
+
+
+def validate_imported_questions(imported_data):
+    """
+    Yüklenen JSON bilgi tabanını kontrol eder.
+    """
+
+    if not isinstance(
+        imported_data,
+        list
+    ):
+
+        return (
+            False,
+            "JSON dosyasının ana yapısı liste olmalıdır.",
+            []
+        )
+
+    validated_items = []
+
+    for item_number, item in enumerate(
+        imported_data,
+        start=1
+    ):
+
+        if not isinstance(
+            item,
+            dict
+        ):
+
+            return (
+                False,
+                "{}. kayıt geçerli değildir.".format(
+                    item_number
+                ),
+                []
+            )
+
+        category = str(
+            item.get(
+                "category",
+                ""
+            )
+        ).strip()
+
+        question = str(
+            item.get(
+                "question",
+                ""
+            )
+        ).strip()
+
+        answer = str(
+            item.get(
+                "answer",
+                ""
+            )
+        ).strip()
+
+        keywords = item.get(
+            "keywords",
+            []
+        )
+
+        if category not in CATEGORIES:
+
+            return (
+                False,
+                "{}. kayıtta geçersiz kategori bulunuyor.".format(
+                    item_number
+                ),
+                []
+            )
+
+        if not question:
+
+            return (
+                False,
+                "{}. kayıtta soru alanı boş.".format(
+                    item_number
+                ),
+                []
+            )
+
+        if not answer:
+
+            return (
+                False,
+                "{}. kayıtta cevap alanı boş.".format(
+                    item_number
+                ),
+                []
+            )
+
+        if isinstance(
+            keywords,
+            str
+        ):
+
+            keywords = [
+                keyword.strip()
+                for keyword in keywords.split(",")
+                if keyword.strip()
+            ]
+
+        if not isinstance(
+            keywords,
+            list
+        ):
+
+            keywords = []
+
+        cleaned_keywords = [
+            str(keyword).strip()
+            for keyword in keywords
+            if str(keyword).strip()
+        ]
+
+        if not cleaned_keywords:
+
+            cleaned_keywords = [
+                question
+            ]
+
+        validated_items.append(
+            {
+                "category": category,
+                "question": question,
+                "keywords": cleaned_keywords,
+                "answer": answer
+            }
+        )
+
+    return (
+        True,
+        "Bilgi tabanı geçerli.",
+        validated_items
+    )
+
+
 def convert_chat_to_dictionary(chat):
     """
     Veritabanından gelen sohbet kaydını
@@ -216,14 +490,17 @@ def convert_chat_to_dictionary(chat):
     try:
         return dict(chat)
 
-    except (TypeError, ValueError):
+    except (
+        TypeError,
+        ValueError
+    ):
         return {}
 
 
 def prepare_chat_history(chat_history):
     """
-    Sohbet kayıtlarının tamamını güvenli
-    sözlük biçimine dönüştürür.
+    Sohbet kayıtlarını sözlük listesine
+    dönüştürür.
     """
 
     return [
@@ -232,21 +509,31 @@ def prepare_chat_history(chat_history):
     ]
 
 
-def get_chat_value(chat, possible_keys, default="-"):
+def get_chat_value(
+    chat,
+    possible_keys,
+    default="-"
+):
     """
-    Bir sohbet kaydındaki olası sütun
-    isimlerinden ilk bulunan değeri döndürür.
+    Olası sütun isimlerinden bulunan
+    ilk değeri döndürür.
     """
 
-    chat_dictionary = convert_chat_to_dictionary(
-        chat
+    chat_dictionary = (
+        convert_chat_to_dictionary(chat)
     )
 
     for key in possible_keys:
 
-        value = chat_dictionary.get(key)
+        value = chat_dictionary.get(
+            key
+        )
 
-        if value is not None and value != "":
+        if (
+            value is not None
+            and value != ""
+        ):
+
             return value
 
     return default
@@ -254,8 +541,7 @@ def get_chat_value(chat, possible_keys, default="-"):
 
 def calculate_statistics(chat_history):
     """
-    Sohbet geçmişinden dashboard ve rapor
-    istatistiklerini hesaplar.
+    Sohbet geçmişinden istatistik üretir.
     """
 
     prepared_history = prepare_chat_history(
@@ -288,16 +574,22 @@ def calculate_statistics(chat_history):
     )
 
     category_counter = Counter(
-        chat.get("category", "diger")
+        chat.get(
+            "category",
+            "diger"
+        )
         for chat in prepared_history
     )
 
     if category_counter:
 
-        (
-            most_used_category_key,
-            most_used_category_count
-        ) = category_counter.most_common(1)[0]
+        most_used_category_key = (
+            category_counter.most_common(1)[0][0]
+        )
+
+        most_used_category_count = (
+            category_counter.most_common(1)[0][1]
+        )
 
         most_used_category_name = CATEGORIES.get(
             most_used_category_key,
@@ -306,12 +598,18 @@ def calculate_statistics(chat_history):
 
     else:
 
-        most_used_category_name = "Henüz veri yok"
+        most_used_category_name = (
+            "Henüz veri yok"
+        )
+
         most_used_category_count = 0
 
     category_statistics = []
 
-    for category_key, category_name in CATEGORIES.items():
+    for (
+        category_key,
+        category_name
+    ) in CATEGORIES.items():
 
         category_statistics.append(
             {
@@ -335,26 +633,32 @@ def calculate_statistics(chat_history):
         "most_used_category_count": (
             most_used_category_count
         ),
-        "category_statistics": category_statistics
+        "category_statistics": (
+            category_statistics
+        )
     }
 
 
 def format_report_date(date_value):
     """
-    Tarih bilgisini raporlarda okunabilir
-    biçime dönüştürür.
+    Tarih bilgisini rapor formatına çevirir.
     """
 
     if not date_value:
         return "-"
 
-    if isinstance(date_value, datetime):
+    if isinstance(
+        date_value,
+        datetime
+    ):
 
         return date_value.strftime(
             "%d.%m.%Y %H:%M"
         )
 
-    date_text = str(date_value)
+    date_text = str(
+        date_value
+    )
 
     date_formats = [
         "%Y-%m-%d %H:%M:%S",
@@ -392,13 +696,13 @@ def format_report_date(date_value):
         )
 
     except ValueError:
+
         return date_text
 
 
 def format_feedback(feedback):
     """
-    Veritabanındaki geri bildirim değerini
-    Türkçe rapor metnine dönüştürür.
+    Geri bildirim değerini Türkçeye çevirir.
     """
 
     if feedback == "positive":
@@ -412,8 +716,8 @@ def format_feedback(feedback):
 
 def register_pdf_fonts():
     """
-    PDF dosyalarında Türkçe karakterlerin
-    düzgün görünmesi için yazı tipi kaydeder.
+    PDF içerisinde Türkçe karakter
+    desteği için yazı tipi kaydeder.
     """
 
     regular_font_paths = [
@@ -433,14 +737,18 @@ def register_pdf_fonts():
 
     for font_path in regular_font_paths:
 
-        if os.path.exists(font_path):
+        if os.path.exists(
+            font_path
+        ):
 
             regular_font_path = font_path
             break
 
     for font_path in bold_font_paths:
 
-        if os.path.exists(font_path):
+        if os.path.exists(
+            font_path
+        ):
 
             bold_font_path = font_path
             break
@@ -502,7 +810,7 @@ def register_pdf_fonts():
 )
 def home():
     """
-    Kullanıcıların teknik destek sorusu
+    Kullanıcının teknik destek sorusu
     sorduğu ana sayfa.
     """
 
@@ -519,6 +827,7 @@ def home():
         ).strip()
 
         if category not in CATEGORIES:
+
             category = "diger"
 
         if not question:
@@ -560,8 +869,10 @@ def home():
     )
 
     category_questions = {
-        category_key: get_questions_by_category(
-            category_key
+        category_key: (
+            get_questions_by_category(
+                category_key
+            )
         )
         for category_key in CATEGORIES
     }
@@ -595,7 +906,9 @@ def admin_login():
     Yönetici giriş sayfası.
     """
 
-    if session.get("admin_logged_in"):
+    if session.get(
+        "admin_logged_in"
+    ):
 
         return redirect(
             url_for("admin_panel")
@@ -613,15 +926,24 @@ def admin_login():
             ""
         )
 
+        settings = load_settings()
+
         if (
-            username == ADMIN_USERNAME
-            and password == ADMIN_PASSWORD
+            username
+            == settings["admin_username"]
+            and password
+            == settings["admin_password"]
         ):
 
             session.clear()
 
-            session["admin_logged_in"] = True
-            session["admin_username"] = username
+            session[
+                "admin_logged_in"
+            ] = True
+
+            session[
+                "admin_username"
+            ] = username
 
             flash(
                 "Yönetici paneline başarıyla giriş yaptınız.",
@@ -668,7 +990,7 @@ def admin_logout():
 @admin_login_required
 def admin_panel():
     """
-    Admin dashboard sayfası.
+    Yönetici dashboard sayfası.
     """
 
     support_items = load_questions()
@@ -681,13 +1003,15 @@ def admin_panel():
         chat_history
     )
 
+    settings = load_settings()
+
     return render_template(
         "admin/dashboard.html",
         active_page="dashboard",
         categories=CATEGORIES,
         total_items=len(support_items),
         statistics=statistics,
-        admin_username=session.get(
+        admin_username=settings.get(
             "admin_username",
             "admin"
         )
@@ -707,13 +1031,15 @@ def admin_knowledge():
 
     support_items = load_questions()
 
+    settings = load_settings()
+
     return render_template(
         "admin/knowledge.html",
         active_page="knowledge",
         support_items=support_items,
         categories=CATEGORIES,
         total_items=len(support_items),
-        admin_username=session.get(
+        admin_username=settings.get(
             "admin_username",
             "admin"
         )
@@ -727,7 +1053,7 @@ def admin_knowledge():
 @admin_login_required
 def add_support_item():
     """
-    Bilgi tabanına yeni soru ve cevap ekler.
+    Bilgi tabanına yeni kayıt ekler.
     """
 
     category = request.form.get(
@@ -790,7 +1116,10 @@ def add_support_item():
     ]
 
     if not keywords:
-        keywords = [question]
+
+        keywords = [
+            question
+        ]
 
     support_items = load_questions()
 
@@ -826,7 +1155,9 @@ def add_support_item():
         }
     )
 
-    if not save_questions(support_items):
+    if not save_questions(
+        support_items
+    ):
 
         flash(
             "Kayıt eklenirken bir hata oluştu.",
@@ -861,7 +1192,9 @@ def edit_support_item(item_index):
 
     if (
         item_index < 0
-        or item_index >= len(support_items)
+        or item_index >= len(
+            support_items
+        )
     ):
 
         flash(
@@ -933,7 +1266,10 @@ def edit_support_item(item_index):
     ]
 
     if not keywords:
-        keywords = [question]
+
+        keywords = [
+            question
+        ]
 
     question_lower = question.lower()
 
@@ -968,7 +1304,9 @@ def edit_support_item(item_index):
         "answer": answer
     }
 
-    if not save_questions(support_items):
+    if not save_questions(
+        support_items
+    ):
 
         flash(
             "Kayıt düzenlenirken bir hata oluştu.",
@@ -1003,7 +1341,9 @@ def delete_support_item(item_index):
 
     if (
         item_index < 0
-        or item_index >= len(support_items)
+        or item_index >= len(
+            support_items
+        )
     ):
 
         flash(
@@ -1019,7 +1359,9 @@ def delete_support_item(item_index):
         item_index
     )
 
-    if not save_questions(support_items):
+    if not save_questions(
+        support_items
+    ):
 
         flash(
             "Kayıt silinirken bir hata oluştu.",
@@ -1053,7 +1395,7 @@ def delete_support_item(item_index):
 @admin_login_required
 def admin_reports():
     """
-    Sistem raporları sayfası.
+    Raporlar sayfasını gösterir.
     """
 
     chat_history = prepare_chat_history(
@@ -1064,12 +1406,14 @@ def admin_reports():
         chat_history
     )
 
+    settings = load_settings()
+
     return render_template(
         "admin/reports.html",
         active_page="reports",
         categories=CATEGORIES,
         statistics=statistics,
-        admin_username=session.get(
+        admin_username=settings.get(
             "admin_username",
             "admin"
         )
@@ -1084,8 +1428,8 @@ def admin_reports():
 @admin_login_required
 def download_excel_report():
     """
-    Sohbet geçmişini ve istatistikleri
-    Excel dosyası olarak indirir.
+    Sohbet geçmişini Excel raporu
+    olarak indirir.
     """
 
     chat_history = prepare_chat_history(
@@ -1099,7 +1443,10 @@ def download_excel_report():
     workbook = Workbook()
 
     chat_sheet = workbook.active
-    chat_sheet.title = "Sohbet Geçmişi"
+
+    chat_sheet.title = (
+        "Sohbet Geçmişi"
+    )
 
     header_fill = PatternFill(
         fill_type="solid",
@@ -1125,19 +1472,27 @@ def download_excel_report():
         "Smart Support AI - Sohbet Raporu"
     )
 
-    chat_sheet["A1"].font = title_font
+    chat_sheet["A1"].font = (
+        title_font
+    )
 
     chat_sheet["A1"].alignment = Alignment(
         horizontal="center",
         vertical="center"
     )
 
-    chat_sheet.row_dimensions[1].height = 30
+    chat_sheet.row_dimensions[
+        1
+    ].height = 30
 
-    chat_sheet["A2"] = "Rapor Tarihi"
+    chat_sheet["A2"] = (
+        "Rapor Tarihi"
+    )
 
-    chat_sheet["B2"] = datetime.now().strftime(
-        "%d.%m.%Y %H:%M"
+    chat_sheet["B2"] = (
+        datetime.now().strftime(
+            "%d.%m.%Y %H:%M"
+        )
     )
 
     headers = [
@@ -1152,7 +1507,10 @@ def download_excel_report():
 
     header_row = 4
 
-    for column_index, header in enumerate(
+    for (
+        column_index,
+        header
+    ) in enumerate(
         headers,
         start=1
     ):
@@ -1163,20 +1521,31 @@ def download_excel_report():
             value=header
         )
 
-        cell.fill = header_fill
-        cell.font = header_font
+        cell.fill = (
+            header_fill
+        )
+
+        cell.font = (
+            header_font
+        )
 
         cell.alignment = Alignment(
             horizontal="center",
             vertical="center"
         )
 
-    for row_index, chat in enumerate(
+    for (
+        row_index,
+        chat
+    ) in enumerate(
         chat_history,
         start=1
     ):
 
-        excel_row = header_row + row_index
+        excel_row = (
+            header_row
+            + row_index
+        )
 
         feedback = format_feedback(
             get_chat_value(
@@ -1226,11 +1595,16 @@ def download_excel_report():
             ),
             category,
             feedback,
-            format_report_date(date_value),
+            format_report_date(
+                date_value
+            ),
             chat_id
         ]
 
-        for column_index, value in enumerate(
+        for (
+            column_index,
+            value
+        ) in enumerate(
             row_values,
             start=1
         ):
@@ -1256,7 +1630,10 @@ def download_excel_report():
         7: 38
     }
 
-    for column_index, width in column_widths.items():
+    for (
+        column_index,
+        width
+    ) in column_widths.items():
 
         column_letter = get_column_letter(
             column_index
@@ -1266,10 +1643,14 @@ def download_excel_report():
             column_letter
         ].width = width
 
-    chat_sheet.freeze_panes = "A5"
+    chat_sheet.freeze_panes = (
+        "A5"
+    )
 
-    statistics_sheet = workbook.create_sheet(
-        "İstatistikler"
+    statistics_sheet = (
+        workbook.create_sheet(
+            "İstatistikler"
+        )
     )
 
     statistics_sheet.merge_cells(
@@ -1280,14 +1661,21 @@ def download_excel_report():
         "Smart Support AI - Sistem İstatistikleri"
     )
 
-    statistics_sheet["A1"].font = title_font
+    statistics_sheet["A1"].font = (
+        title_font
+    )
 
     statistics_sheet["A1"].alignment = Alignment(
         horizontal="center"
     )
 
-    statistics_sheet["A3"] = "İstatistik"
-    statistics_sheet["B3"] = "Değer"
+    statistics_sheet["A3"] = (
+        "İstatistik"
+    )
+
+    statistics_sheet["B3"] = (
+        "Değer"
+    )
 
     for cell in statistics_sheet[3]:
 
@@ -1301,19 +1689,27 @@ def download_excel_report():
     statistic_rows = [
         (
             "Toplam soru",
-            statistics["total_questions"]
+            statistics[
+                "total_questions"
+            ]
         ),
         (
             "Olumlu geri bildirim",
-            statistics["positive_feedback"]
+            statistics[
+                "positive_feedback"
+            ]
         ),
         (
             "Olumsuz geri bildirim",
-            statistics["negative_feedback"]
+            statistics[
+                "negative_feedback"
+            ]
         ),
         (
             "Değerlendirilmeyen",
-            statistics["unanswered_feedback"]
+            statistics[
+                "unanswered_feedback"
+            ]
         ),
         (
             "En çok kullanılan kategori",
@@ -1329,7 +1725,10 @@ def download_excel_report():
         )
     ]
 
-    for row_index, statistic_row in enumerate(
+    for (
+        row_index,
+        statistic_row
+    ) in enumerate(
         statistic_rows,
         start=4
     ):
@@ -1347,7 +1746,8 @@ def download_excel_report():
         )
 
     category_start_row = (
-        len(statistic_rows) + 6
+        len(statistic_rows)
+        + 6
     )
 
     statistics_sheet.cell(
@@ -1362,7 +1762,10 @@ def download_excel_report():
         value="Soru Sayısı"
     )
 
-    for column_index in range(1, 3):
+    for column_index in range(
+        1,
+        3
+    ):
 
         cell = statistics_sheet.cell(
             row=category_start_row,
@@ -1376,21 +1779,36 @@ def download_excel_report():
             horizontal="center"
         )
 
-    for row_offset, category_data in enumerate(
-        statistics["category_statistics"],
+    for (
+        row_offset,
+        category_data
+    ) in enumerate(
+        statistics[
+            "category_statistics"
+        ],
         start=1
     ):
 
         statistics_sheet.cell(
-            row=category_start_row + row_offset,
+            row=(
+                category_start_row
+                + row_offset
+            ),
             column=1,
-            value=category_data["name"]
+            value=category_data[
+                "name"
+            ]
         )
 
         statistics_sheet.cell(
-            row=category_start_row + row_offset,
+            row=(
+                category_start_row
+                + row_offset
+            ),
             column=2,
-            value=category_data["count"]
+            value=category_data[
+                "count"
+            ]
         )
 
     statistics_sheet.column_dimensions[
@@ -1436,8 +1854,8 @@ def download_excel_report():
 @admin_login_required
 def download_pdf_report():
     """
-    Sohbet geçmişini ve istatistikleri
-    PDF dosyası olarak indirir.
+    Sohbet geçmişini PDF raporu
+    olarak indirir.
     """
 
     chat_history = prepare_chat_history(
@@ -1593,7 +2011,9 @@ def download_pdf_report():
                     "BACKGROUND",
                     (0, 0),
                     (-1, 0),
-                    colors.HexColor("#4F46E5")
+                    colors.HexColor(
+                        "#4F46E5"
+                    )
                 ),
                 (
                     "TEXTCOLOR",
@@ -1605,7 +2025,9 @@ def download_pdf_report():
                     "BACKGROUND",
                     (0, 1),
                     (-1, -1),
-                    colors.HexColor("#EEF2FF")
+                    colors.HexColor(
+                        "#EEF2FF"
+                    )
                 ),
                 (
                     "ALIGN",
@@ -1624,7 +2046,9 @@ def download_pdf_report():
                     (0, 0),
                     (-1, -1),
                     0.5,
-                    colors.HexColor("#CBD5E1")
+                    colors.HexColor(
+                        "#CBD5E1"
+                    )
                 ),
                 (
                     "TOPPADDING",
@@ -1682,7 +2106,10 @@ def download_pdf_report():
         ]
     ]
 
-    for row_index, chat in enumerate(
+    for (
+        row_index,
+        chat
+    ) in enumerate(
         chat_history,
         start=1
     ):
@@ -1788,7 +2215,9 @@ def download_pdf_report():
                     "BACKGROUND",
                     (0, 0),
                     (-1, 0),
-                    colors.HexColor("#4F46E5")
+                    colors.HexColor(
+                        "#4F46E5"
+                    )
                 ),
                 (
                     "TEXTCOLOR",
@@ -1813,7 +2242,9 @@ def download_pdf_report():
                     (0, 0),
                     (-1, -1),
                     0.35,
-                    colors.HexColor("#CBD5E1")
+                    colors.HexColor(
+                        "#CBD5E1"
+                    )
                 ),
                 (
                     "ROWBACKGROUNDS",
@@ -1821,7 +2252,9 @@ def download_pdf_report():
                     (-1, -1),
                     [
                         colors.white,
-                        colors.HexColor("#F8FAFC")
+                        colors.HexColor(
+                            "#F8FAFC"
+                        )
                     ]
                 ),
                 (
@@ -1874,8 +2307,7 @@ def download_pdf_report():
 @admin_login_required
 def download_database_backup():
     """
-    SQLite veritabanını yedek dosyası
-    olarak indirir.
+    SQLite veritabanını indirir.
     """
 
     if not DATABASE_FILE.exists():
@@ -1906,28 +2338,371 @@ def download_database_backup():
 
 
 # ==================================================
-# AYARLAR
+# AYARLAR SAYFASI
 # ==================================================
 
 @app.route("/admin/settings")
 @admin_login_required
 def admin_settings():
     """
-    Admin ayarlar sayfası.
+    Yönetici ayarları ve sistem
+    bilgileri sayfasını gösterir.
     """
+
+    settings = load_settings()
+
+    system_versions = (
+        get_system_versions()
+    )
+
+    support_items = load_questions()
+
+    chat_history = prepare_chat_history(
+        get_all_chats()
+    )
 
     return render_template(
         "admin/settings.html",
         active_page="settings",
-        admin_username=session.get(
+        admin_username=settings.get(
             "admin_username",
             "admin"
+        ),
+        system_versions=system_versions,
+        total_knowledge_items=len(
+            support_items
+        ),
+        total_chat_records=len(
+            chat_history
         )
     )
 
 
 # ==================================================
-# GERİ BİLDİRİM
+# YÖNETİCİ ŞİFRESİ DEĞİŞTİRME
+# ==================================================
+
+@app.route(
+    "/admin/settings/password",
+    methods=["POST"]
+)
+@admin_login_required
+def change_admin_password():
+    """
+    Yönetici şifresini değiştirir.
+    """
+
+    current_password = request.form.get(
+        "current_password",
+        ""
+    )
+
+    new_password = request.form.get(
+        "new_password",
+        ""
+    )
+
+    confirm_password = request.form.get(
+        "confirm_password",
+        ""
+    )
+
+    settings = load_settings()
+
+    if (
+        current_password
+        != settings["admin_password"]
+    ):
+
+        flash(
+            "Mevcut yönetici şifresi yanlış.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_settings")
+        )
+
+    if len(new_password) < 6:
+
+        flash(
+            "Yeni şifre en az 6 karakter olmalıdır.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_settings")
+        )
+
+    if (
+        new_password
+        != confirm_password
+    ):
+
+        flash(
+            "Yeni şifreler birbiriyle eşleşmiyor.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_settings")
+        )
+
+    if (
+        new_password
+        == current_password
+    ):
+
+        flash(
+            "Yeni şifre mevcut şifreyle aynı olamaz.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_settings")
+        )
+
+    settings[
+        "admin_password"
+    ] = new_password
+
+    if not save_settings(
+        settings
+    ):
+
+        flash(
+            "Şifre kaydedilirken bir hata oluştu.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_settings")
+        )
+
+    flash(
+        "Yönetici şifresi başarıyla değiştirildi.",
+        "success"
+    )
+
+    return redirect(
+        url_for("admin_settings")
+    )
+
+
+# ==================================================
+# ADMIN SOHBET GEÇMİŞİNİ TEMİZLEME
+# ==================================================
+
+@app.route(
+    "/admin/settings/clear-history",
+    methods=["POST"]
+)
+@admin_login_required
+def admin_clear_chat_history():
+    """
+    Sohbet geçmişini admin panelinden siler.
+    """
+
+    confirmation = request.form.get(
+        "confirmation",
+        ""
+    )
+
+    if confirmation != "confirm":
+
+        flash(
+            "Sohbet geçmişi silme işlemi onaylanmadı.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_settings")
+        )
+
+    clear_all_chats()
+
+    flash(
+        "Tüm sohbet geçmişi başarıyla temizlendi.",
+        "success"
+    )
+
+    return redirect(
+        url_for("admin_settings")
+    )
+
+
+# ==================================================
+# BİLGİ TABANINI JSON OLARAK İNDİRME
+# ==================================================
+
+@app.route(
+    "/admin/settings/export-knowledge"
+)
+@admin_login_required
+def export_knowledge_base():
+    """
+    Bilgi tabanını JSON yedeği
+    olarak indirir.
+    """
+
+    support_items = load_questions()
+
+    json_content = json.dumps(
+        support_items,
+        ensure_ascii=False,
+        indent=4
+    )
+
+    report_stream = BytesIO(
+        json_content.encode(
+            "utf-8"
+        )
+    )
+
+    filename = (
+        "smart_support_bilgi_tabani_"
+        + datetime.now().strftime(
+            "%Y%m%d_%H%M%S"
+        )
+        + ".json"
+    )
+
+    return send_file(
+        report_stream,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/json"
+    )
+
+
+# ==================================================
+# BİLGİ TABANINI JSON DOSYASINDAN YÜKLEME
+# ==================================================
+
+@app.route(
+    "/admin/settings/import-knowledge",
+    methods=["POST"]
+)
+@admin_login_required
+def import_knowledge_base():
+    """
+    JSON dosyasını bilgi tabanı
+    olarak sisteme yükler.
+    """
+
+    uploaded_file = request.files.get(
+        "knowledge_file"
+    )
+
+    if (
+        uploaded_file is None
+        or not uploaded_file.filename
+    ):
+
+        flash(
+            "Lütfen bir JSON dosyası seçin.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_settings")
+        )
+
+    if not uploaded_file.filename.lower().endswith(
+        ".json"
+    ):
+
+        flash(
+            "Yalnızca JSON dosyası yükleyebilirsiniz.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_settings")
+        )
+
+    try:
+
+        file_content = (
+            uploaded_file.read().decode(
+                "utf-8-sig"
+            )
+        )
+
+        imported_data = json.loads(
+            file_content
+        )
+
+    except UnicodeDecodeError:
+
+        flash(
+            "Dosyanın karakter kodlaması okunamadı.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_settings")
+        )
+
+    except json.JSONDecodeError:
+
+        flash(
+            "Seçilen dosya geçerli bir JSON dosyası değil.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_settings")
+        )
+
+    (
+        is_valid,
+        validation_message,
+        validated_items
+    ) = validate_imported_questions(
+        imported_data
+    )
+
+    if not is_valid:
+
+        flash(
+            validation_message,
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_settings")
+        )
+
+    if not save_questions(
+        validated_items
+    ):
+
+        flash(
+            "Bilgi tabanı kaydedilirken hata oluştu.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_settings")
+        )
+
+    flash(
+        "{} bilgi tabanı kaydı başarıyla içe aktarıldı.".format(
+            len(
+                validated_items
+            )
+        ),
+        "success"
+    )
+
+    return redirect(
+        url_for("admin_settings")
+    )
+
+
+# ==================================================
+# KULLANICI GERİ BİLDİRİMİ
 # ==================================================
 
 @app.route(
@@ -1972,7 +2747,7 @@ def save_feedback(chat_id):
 
 
 # ==================================================
-# SOHBET GEÇMİŞİNİ TEMİZLEME
+# KULLANICI SOHBET GEÇMİŞİNİ TEMİZLEME
 # ==================================================
 
 @app.route(
@@ -1981,7 +2756,7 @@ def save_feedback(chat_id):
 )
 def clear_history():
     """
-    Kullanıcı sohbet geçmişini temizler.
+    Ana sayfadaki sohbet geçmişini temizler.
     """
 
     clear_all_chats()
@@ -2024,6 +2799,11 @@ if __name__ == "__main__":
     print(
         "Veritabanı:",
         DATABASE_FILE
+    )
+
+    print(
+        "Ayarlar dosyası:",
+        SETTINGS_FILE
     )
 
     print(

@@ -2743,3 +2743,152 @@ body.admin-layout-page {
         width: 100%;
     }
 }
+.admin-settings-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.admin-settings-card {
+    margin: 0;
+}
+
+.admin-settings-card .admin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.admin-settings-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.admin-settings-action h3,
+.admin-danger-box h3 {
+    margin: 0 0 7px;
+}
+
+.admin-settings-action p,
+.admin-danger-box p {
+    margin: 0;
+    color: var(--admin-muted, #64748b);
+    line-height: 1.6;
+}
+
+.admin-settings-link {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 43px;
+    padding: 0 18px;
+    text-decoration: none;
+}
+
+.admin-settings-link:hover {
+    color: #ffffff;
+}
+
+.admin-settings-divider {
+    border: none;
+    border-top: 1px solid #e2e8f0;
+    margin: 24px 0;
+}
+
+.admin-form-group small {
+    display: block;
+    margin-top: 7px;
+    color: #64748b;
+    line-height: 1.5;
+}
+
+.admin-system-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-system-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 15px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.admin-system-item:last-child {
+    border-bottom: none;
+}
+
+.admin-system-item span {
+    color: #64748b;
+}
+
+.admin-system-item strong {
+    text-align: right;
+    color: #0f172a;
+    overflow-wrap: anywhere;
+}
+
+.admin-danger-card {
+    border: 1px solid #fecaca;
+}
+
+.admin-danger-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 22px;
+    padding: 18px;
+    border: 1px solid #fecaca;
+    border-radius: 14px;
+    background: #fef2f2;
+}
+
+.admin-danger-button {
+    min-height: 43px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 10px;
+    background: #dc2626;
+    color: #ffffff;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.admin-danger-button:hover {
+    background: #b91c1c;
+}
+
+@media (max-width: 900px) {
+    .admin-settings-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .admin-settings-action,
+    .admin-danger-box {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .admin-settings-link,
+    .admin-danger-button {
+        width: 100%;
+    }
+
+    .admin-system-item {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .admin-system-item strong {
+        text-align: left;
+    }
+}
