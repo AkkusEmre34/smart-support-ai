@@ -2980,3 +2980,63 @@ body.admin-layout-page {
     border-color: #d97706;
     background: #78350f;
 }
+.rating-area {
+    margin-top: 18px;
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(79, 70, 229, 0.08);
+}
+
+.rating-form {
+    margin-top: 12px;
+}
+
+.star-rating {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    gap: 4px;
+}
+
+.star-rating input {
+    display: none;
+}
+
+.star-rating label {
+    cursor: pointer;
+    font-size: 34px;
+    color: #cbd5e1;
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input:checked ~ label {
+    color: #f59e0b;
+}
+
+.star-rating label:hover {
+    transform: scale(1.12);
+}
+
+.rating-submit-button {
+    display: block;
+    margin-top: 12px;
+    padding: 9px 16px;
+    border: none;
+    border-radius: 8px;
+    background: #4f46e5;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.rating-submit-button:hover {
+    background: #4338ca;
+}
+
+.dark-mode .rating-area {
+    background: rgba(129, 140, 248, 0.12);
+}

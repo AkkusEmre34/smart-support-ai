@@ -52,7 +52,8 @@ from database import (
     clear_all_chats,
     get_all_chats,
     init_database,
-    update_feedback
+    update_feedback,
+    update_rating
 )
 
 
@@ -3151,6 +3152,7 @@ def import_knowledge_base():
     )
 
 
+
 # ==================================================
 # KULLANICI GERİ BİLDİRİMİ
 # ==================================================
@@ -3187,6 +3189,82 @@ def save_feedback(chat_id):
     update_feedback(
         chat_id,
         feedback
+    )
+
+    return redirect(
+        url_for("home")
+        + "#chat-"
+        + chat_id
+    )
+
+
+# ==================================================
+# YILDIZLI DEĞERLENDİRME
+# ==================================================
+
+@app.route(
+    "/rating/<chat_id>",
+    methods=["POST"]
+)
+def save_rating(chat_id):
+    """
+    Kullanıcının verdiği 1-5 arasındaki
+    yıldız puanını kaydeder.
+    """
+
+    try:
+
+        rating = int(
+            request.form.get(
+                "rating",
+                "0"
+            )
+        )
+
+    except (
+        TypeError,
+        ValueError
+    ):
+
+        flash(
+            "Geçersiz puan.",
+            "error"
+        )
+
+        return redirect(
+            url_for("home")
+        )
+
+    if rating < 1 or rating > 5:
+
+        flash(
+            "Puan 1 ile 5 arasında olmalıdır.",
+            "error"
+        )
+
+        return redirect(
+            url_for("home")
+        )
+
+    rating_saved = update_rating(
+        chat_id,
+        rating
+    )
+
+    if not rating_saved:
+
+        flash(
+            "Değerlendirilecek sohbet bulunamadı.",
+            "error"
+        )
+
+        return redirect(
+            url_for("home")
+        )
+
+    flash(
+        "Yıldız değerlendirmeniz kaydedildi.",
+        "success"
     )
 
     return redirect(

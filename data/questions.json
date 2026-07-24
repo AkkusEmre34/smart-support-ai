@@ -188,5 +188,14 @@
             "cihaz görünmüyor"
         ],
         "answer": "Bluetooth özelliğinin açık olduğunu kontrol edin. Cihazı kaldırıp yeniden eşleştirin ve Bluetooth sürücüsünü güncelleyin."
+    },
+    {
+        "category": "diger",
+        "question": "deneme testi nasıl yapılır",
+        "keywords": [
+            "deneme",
+            "test"
+        ],
+        "answer": "Bu, öğrenme sistemini test etmek için eklenen örnek cevaptır."
     }
 ]

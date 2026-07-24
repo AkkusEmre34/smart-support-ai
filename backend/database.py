@@ -52,8 +52,8 @@ def add_missing_columns(
     connection: sqlite3.Connection
 ) -> None:
     """
-    Eski veritabanına yeni yapay zekâ
-    sütunlarını güvenli şekilde ekler.
+    Eski veritabanına sonradan eklenen
+    sütunları güvenli şekilde ekler.
     """
 
     columns = {
@@ -61,7 +61,8 @@ def add_missing_columns(
         "confidence_level": "TEXT",
         "matched_question": "TEXT",
         "suggestion": "TEXT",
-        "match_type": "TEXT"
+        "match_type": "TEXT",
+        "rating": "INTEGER"
     }
 
     for column_name, column_definition in columns.items():
@@ -85,8 +86,8 @@ def add_missing_columns(
 
 def init_database() -> None:
     """
-    Sohbet tablosunu oluşturur ve eksik
-    sütunları mevcut veritabanına ekler.
+    Sohbet tablosunu oluşturur ve eski
+    veritabanındaki eksik sütunları ekler.
     """
 
     DATABASE_FILE.parent.mkdir(
@@ -105,6 +106,7 @@ def init_database() -> None:
                 category TEXT NOT NULL,
                 category_name TEXT NOT NULL,
                 feedback TEXT,
+                rating INTEGER,
                 confidence_score INTEGER DEFAULT 0,
                 confidence_level TEXT,
                 matched_question TEXT,
@@ -135,8 +137,8 @@ def add_chat(
     match_type: str = "not_found"
 ) -> None:
     """
-    Kullanıcı sorusunu, yapay zekâ cevabını ve
-    eşleşme bilgilerini veritabanına kaydeder.
+    Kullanıcı sorusunu ve yapay zekâ
+    cevabını veritabanına kaydeder.
     """
 
     with get_connection() as connection:
@@ -150,6 +152,7 @@ def add_chat(
                 category,
                 category_name,
                 feedback,
+                rating,
                 confidence_score,
                 confidence_level,
                 matched_question,
@@ -162,6 +165,7 @@ def add_chat(
                 ?,
                 ?,
                 ?,
+                NULL,
                 NULL,
                 ?,
                 ?,
@@ -189,8 +193,8 @@ def add_chat(
 
 def get_all_chats() -> list[dict[str, Any]]:
     """
-    Bütün sohbet kayıtlarını tarih sırasına
-    göre getirir.
+    Bütün sohbet kayıtlarını tarih
+    sırasına göre getirir.
     """
 
     with get_connection() as connection:
@@ -204,6 +208,7 @@ def get_all_chats() -> list[dict[str, Any]]:
                 category,
                 category_name,
                 feedback,
+                rating,
                 confidence_score,
                 confidence_level,
                 matched_question,
@@ -240,6 +245,7 @@ def get_chat_by_id(
                 category,
                 category_name,
                 feedback,
+                rating,
                 confidence_score,
                 confidence_level,
                 matched_question,
@@ -267,8 +273,8 @@ def update_feedback(
     feedback: str
 ) -> bool:
     """
-    Sohbet kaydının kullanıcı geri
-    bildirimini günceller.
+    Sohbet kaydının olumlu veya olumsuz
+    geri bildirimini günceller.
     """
 
     if feedback not in [
@@ -288,6 +294,37 @@ def update_feedback(
             """,
             (
                 feedback,
+                chat_id
+            )
+        )
+
+        connection.commit()
+
+        return cursor.rowcount > 0
+
+
+def update_rating(
+    chat_id: str,
+    rating: int
+) -> bool:
+    """
+    Kullanıcının verdiği 1-5 arasındaki
+    yıldız puanını kaydeder.
+    """
+
+    if rating < 1 or rating > 5:
+        return False
+
+    with get_connection() as connection:
+
+        cursor = connection.execute(
+            """
+            UPDATE chats
+            SET rating = ?
+            WHERE id = ?
+            """,
+            (
+                rating,
                 chat_id
             )
         )

@@ -506,105 +506,86 @@
 
                                     <div class="answer-actions">
 
-                                        <button
-                                            type="button"
-                                            class="copy-button"
-                                        >
-                                            📋 Cevabı Kopyala
-                                        </button>
+    <button
+        type="button"
+        class="copy-button"
+    >
+        📋 Cevabı Kopyala
+    </button>
 
-                                        {% if not chat.feedback %}
+    {% if not chat.rating %}
 
-                                            <div class="feedback-area">
+        <div class="rating-area">
 
-                                                <span class="feedback-question">
-                                                    Bu çözüm işe yaradı mı?
-                                                </span>
+            <span class="feedback-question">
+                Bu cevabı kaç yıldızla değerlendirirsiniz?
+            </span>
 
-                                                <div class="feedback-buttons">
+            <form
+                method="POST"
+                action="{{ url_for('save_rating', chat_id=chat.id) }}"
+                class="rating-form"
+            >
 
-                                                    <form
-                                                        method="POST"
-                                                        action="{{ url_for('save_feedback', chat_id=chat.id) }}"
-                                                    >
+                <div class="star-rating">
 
-                                                        <input
-                                                            type="hidden"
-                                                            name="feedback"
-                                                            value="positive"
-                                                        >
+                    {% for star in [5, 4, 3, 2, 1] %}
 
-                                                        <button
-                                                            type="submit"
-                                                            class="feedback-button positive-button"
-                                                        >
-                                                            👍 İşe yaradı
-                                                        </button>
+                        <input
+                            type="radio"
+                            id="star-{{ chat.id }}-{{ star }}"
+                            name="rating"
+                            value="{{ star }}"
+                            required
+                        >
 
-                                                    </form>
-
-                                                    <form
-                                                        method="POST"
-                                                        action="{{ url_for('save_feedback', chat_id=chat.id) }}"
-                                                    >
-
-                                                        <input
-                                                            type="hidden"
-                                                            name="feedback"
-                                                            value="negative"
-                                                        >
-
-                                                        <button
-                                                            type="submit"
-                                                            class="feedback-button negative-button"
-                                                        >
-                                                            👎 İşe yaramadı
-                                                        </button>
-
-                                                    </form>
-
-                                                </div>
-
-                                            </div>
-
-                                        {% elif chat.feedback == "positive" %}
-
-                                            <div class="feedback-result positive-result">
-
-                                                ✅ Teşekkürler! Çözümün işe
-                                                yaradığını kaydettik.
-
-                                            </div>
-
-                                        {% elif chat.feedback == "negative" %}
-
-                                            <div class="feedback-result negative-result">
-
-                                                📝 Teşekkürler! Geri bildiriminizi
-                                                kaydettik.
-
-                                            </div>
-
-                                        {% endif %}
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </article>
+                        <label
+                            for="star-{{ chat.id }}-{{ star }}"
+                            title="{{ star }} yıldız"
+                        >
+                            ★
+                        </label>
 
                     {% endfor %}
 
                 </div>
 
-            </section>
+                <button
+                    type="submit"
+                    class="rating-submit-button"
+                >
+                    Puanı Kaydet
+                </button>
 
-        {% endif %}
+            </form>
+
+        </div>
+
+    {% else %}
+
+        <div class="feedback-result positive-result">
+
+            ✅ Bu cevaba {{ chat.rating }} yıldız verdiniz.
+
+        </div>
+
+    {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    {% endif %}
 
     </main>
-
     <script>
         const questionBox =
             document.getElementById("question");
