@@ -12,7 +12,8 @@
 
 
 {% block page_description %}
-    Sistem istatistiklerini inceleyin ve raporları dışa aktarın.
+    Sistem istatistiklerini, yapay zekâ performansını
+    inceleyin ve raporları dışa aktarın.
 {% endblock %}
 
 
@@ -74,18 +75,128 @@
         <article class="admin-dashboard-card">
 
             <h3>
-                🕒 Değerlendirilmemiş
+                🧠 Ortalama Güven
             </h3>
 
             <strong>
-                {{ statistics.unanswered_feedback }}
+                %{{ statistics.average_confidence }}
             </strong>
 
             <small>
-                Geri bildirim bekliyor
+                Yapay zekâ eşleşme ortalaması
             </small>
 
         </article>
+
+    </section>
+
+
+    <section class="admin-content">
+
+        <div class="admin-content-header">
+
+            <div>
+
+                <h2>
+                    🤖 Yapay Zekâ Performansı
+                </h2>
+
+                <p>
+                    Cevapların güven seviyelerine göre dağılımı
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <section class="admin-dashboard">
+
+            <article class="admin-dashboard-card">
+
+                <h3>
+                    🟢 Yüksek Güven
+                </h3>
+
+                <strong>
+                    {{ statistics.high_confidence_count }}
+                </strong>
+
+                <small>
+                    Güven oranı %70 ve üzeri
+                </small>
+
+            </article>
+
+
+            <article class="admin-dashboard-card">
+
+                <h3>
+                    🟡 Orta Güven
+                </h3>
+
+                <strong>
+                    {{ statistics.medium_confidence_count }}
+                </strong>
+
+                <small>
+                    Güven oranı %40–69
+                </small>
+
+            </article>
+
+
+            <article class="admin-dashboard-card">
+
+                <h3>
+                    🔴 Düşük Güven
+                </h3>
+
+                <strong>
+                    {{ statistics.low_confidence_count }}
+                </strong>
+
+                <small>
+                    Güven oranı %40 altında
+                </small>
+
+            </article>
+
+
+            <article class="admin-dashboard-card">
+
+                <h3>
+                    💡 Soru Önerisi
+                </h3>
+
+                <strong>
+                    {{ statistics.suggestion_count }}
+                </strong>
+
+                <small>
+                    “Bunu mu demek istediniz?” sonucu
+                </small>
+
+            </article>
+
+
+            <article class="admin-dashboard-card">
+
+                <h3>
+                    ⚠️ Başarısız Eşleşme
+                </h3>
+
+                <strong>
+                    {{ statistics.failed_match_count }}
+                </strong>
+
+                <small>
+                    Çözüm bulunamayan soru
+                </small>
+
+            </article>
+
+        </section>
 
     </section>
 
@@ -107,13 +218,12 @@
                 sonuçlarını Excel dosyası olarak dışa aktarın.
             </p>
 
-            <button
-                type="button"
+            <a
+                href="{{ url_for('download_excel_report') }}"
                 class="admin-report-button"
-                disabled
             >
-                Yakında Eklenecek
-            </button>
+                Excel Raporunu İndir
+            </a>
 
         </article>
 
@@ -133,13 +243,12 @@
                 olarak oluşturun.
             </p>
 
-            <button
-                type="button"
+            <a
+                href="{{ url_for('download_pdf_report') }}"
                 class="admin-report-button"
-                disabled
             >
-                Yakında Eklenecek
-            </button>
+                PDF Raporunu İndir
+            </a>
 
         </article>
 
@@ -159,15 +268,134 @@
                 yedek kopyasını oluşturun.
             </p>
 
-            <button
-                type="button"
+            <a
+                href="{{ url_for('download_database_backup') }}"
                 class="admin-report-button"
-                disabled
             >
-                Yakında Eklenecek
-            </button>
+                Veritabanını İndir
+            </a>
 
         </article>
+
+    </section>
+
+
+    <section class="admin-content">
+
+        <div class="admin-content-header">
+
+            <div>
+
+                <h2>
+                    ⚠️ Düşük Güvenli Sorular
+                </h2>
+
+                <p>
+                    Bilgi tabanının geliştirilmesi gereken sorular
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="admin-table-wrapper">
+
+            <table class="admin-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Sıra</th>
+                        <th>Soru</th>
+                        <th>Kategori</th>
+                        <th>Güven</th>
+                        <th>Eşleşme</th>
+                        <th>Geri Bildirim</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for chat in statistics.low_confidence_questions %}
+
+                        <tr>
+
+                            <td>
+                                {{ loop.index }}
+                            </td>
+
+                            <td>
+                                {{ chat.question }}
+                            </td>
+
+                            <td>
+
+                                <span class="admin-category-badge">
+                                    {{ chat.category_name }}
+                                </span>
+
+                            </td>
+
+                            <td>
+                                %{{ chat.confidence_score }}
+                            </td>
+
+                            <td>
+
+                                {% if chat.match_type == "suggestion" %}
+                                    Öneri sunuldu
+
+                                {% elif chat.match_type == "not_found" %}
+                                    Bulunamadı
+
+                                {% elif chat.match_type == "empty" %}
+                                    Boş soru
+
+                                {% elif chat.match_type == "no_category_data" %}
+                                    Kategori verisi yok
+
+                                {% else %}
+                                    {{ chat.match_type }}
+                                {% endif %}
+
+                            </td>
+
+                            <td>
+
+                                {% if chat.feedback == "positive" %}
+                                    👍 Olumlu
+
+                                {% elif chat.feedback == "negative" %}
+                                    👎 Olumsuz
+
+                                {% else %}
+                                    ⏳ Bekliyor
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    {% else %}
+
+                        <tr>
+
+                            <td colspan="6">
+                                Henüz düşük güvenli soru bulunmuyor.
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
 
     </section>
 
@@ -217,9 +445,11 @@
                             </td>
 
                             <td>
+
                                 <span class="admin-category-badge">
                                     {{ item.name }}
                                 </span>
+
                             </td>
 
                             <td>

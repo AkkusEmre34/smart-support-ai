@@ -541,7 +541,8 @@ def get_chat_value(
 
 def calculate_statistics(chat_history):
     """
-    Sohbet geçmişinden istatistik üretir.
+    Sohbet geçmişinden genel istatistikler ve
+    yapay zekâ performans bilgileri üretir.
     """
 
     prepared_history = prepare_chat_history(
@@ -622,6 +623,120 @@ def calculate_statistics(chat_history):
             }
         )
 
+    confidence_scores = []
+
+    for chat in prepared_history:
+
+        try:
+
+            confidence_score = int(
+                chat.get(
+                    "confidence_score",
+                    0
+                )
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            confidence_score = 0
+
+        confidence_scores.append(
+            confidence_score
+        )
+
+    if confidence_scores:
+
+        average_confidence = round(
+            sum(confidence_scores)
+            / len(confidence_scores)
+        )
+
+    else:
+
+        average_confidence = 0
+
+    high_confidence_count = sum(
+        1
+        for score in confidence_scores
+        if score >= 70
+    )
+
+    medium_confidence_count = sum(
+        1
+        for score in confidence_scores
+        if 40 <= score < 70
+    )
+
+    low_confidence_count = sum(
+        1
+        for score in confidence_scores
+        if score < 40
+    )
+
+    suggestion_count = sum(
+        1
+        for chat in prepared_history
+        if chat.get("match_type") == "suggestion"
+    )
+
+    failed_match_count = sum(
+        1
+        for chat in prepared_history
+        if chat.get("match_type") in [
+            "not_found",
+            "no_category_data",
+            "empty"
+        ]
+    )
+
+    low_confidence_questions = []
+
+    for chat in reversed(
+        prepared_history
+    ):
+
+        try:
+
+            confidence_score = int(
+                chat.get(
+                    "confidence_score",
+                    0
+                )
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            confidence_score = 0
+
+        if confidence_score < 40:
+
+            low_confidence_questions.append(
+                {
+                    "question": chat.get(
+                        "question",
+                        "-"
+                    ),
+                    "category_name": chat.get(
+                        "category_name",
+                        "Diğer"
+                    ),
+                    "confidence_score": confidence_score,
+                    "match_type": chat.get(
+                        "match_type",
+                        "not_found"
+                    ),
+                    "feedback": chat.get(
+                        "feedback"
+                    )
+                }
+            )
+
     return {
         "total_questions": total_questions,
         "positive_feedback": positive_feedback,
@@ -635,6 +750,15 @@ def calculate_statistics(chat_history):
         ),
         "category_statistics": (
             category_statistics
+        ),
+        "average_confidence": average_confidence,
+        "high_confidence_count": high_confidence_count,
+        "medium_confidence_count": medium_confidence_count,
+        "low_confidence_count": low_confidence_count,
+        "suggestion_count": suggestion_count,
+        "failed_match_count": failed_match_count,
+        "low_confidence_questions": (
+            low_confidence_questions[:10]
         )
     }
 
