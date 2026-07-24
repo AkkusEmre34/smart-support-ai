@@ -215,7 +215,93 @@
             <h2>
                 📊 Yıldız Dağılım Grafiği
             </h2>
+<section class="admin-content">
 
+    <div class="admin-content-header">
+
+        <div>
+
+            <h2>
+                🕒 Son Değerlendirmeler
+            </h2>
+
+            <p>
+                Kullanıcıların en son verdiği yıldızlı puanlar
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="admin-table-wrapper">
+
+        <table class="admin-table">
+
+            <thead>
+
+                <tr>
+                    <th>Sıra</th>
+                    <th>Soru</th>
+                    <th>Kategori</th>
+                    <th>Puan</th>
+                    <th>Tarih</th>
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for chat in statistics.latest_rated_chats %}
+
+                    <tr>
+
+                        <td>
+                            {{ loop.index }}
+                        </td>
+
+                        <td>
+                            {{ chat.question }}
+                        </td>
+
+                        <td>
+
+                            <span class="admin-category-badge">
+                                {{ chat.category_name }}
+                            </span>
+
+                        </td>
+
+                        <td>
+                            {{ chat.rating }} / 5 ⭐
+                        </td>
+
+                        <td>
+                            {{ chat.created_at }}
+                        </td>
+
+                    </tr>
+
+                {% else %}
+
+                    <tr>
+
+                        <td colspan="5">
+                            Henüz yıldızlı değerlendirme bulunmuyor.
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
             <p>
                 Kullanıcıların verdiği puanların görsel dağılımı
             </p>
