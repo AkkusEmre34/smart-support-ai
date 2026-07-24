@@ -41,15 +41,15 @@
         <article class="admin-dashboard-card">
 
             <h3>
-                👍 Olumlu
+                ⭐ Ortalama Puan
             </h3>
 
             <strong>
-                {{ statistics.positive_feedback }}
+                {{ statistics.average_rating }}/5
             </strong>
 
             <small>
-                Olumlu geri bildirim
+                Kullanıcı değerlendirme ortalaması
             </small>
 
         </article>
@@ -58,15 +58,15 @@
         <article class="admin-dashboard-card">
 
             <h3>
-                👎 Olumsuz
+                🗳️ Toplam Değerlendirme
             </h3>
 
             <strong>
-                {{ statistics.negative_feedback }}
+                {{ statistics.total_ratings }}
             </strong>
 
             <small>
-                Olumsuz geri bildirim
+                Verilen toplam yıldızlı oy
             </small>
 
         </article>
@@ -87,6 +87,116 @@
             </small>
 
         </article>
+
+    </section>
+
+
+    <section class="admin-content">
+
+        <div class="admin-content-header">
+
+            <div>
+
+                <h2>
+                    ⭐ Yıldız Değerlendirme Analizi
+                </h2>
+
+                <p>
+                    Kullanıcıların verdiği 1–5 yıldız puanlarının dağılımı
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <section class="admin-dashboard">
+
+            <article class="admin-dashboard-card">
+
+                <h3>
+                    ⭐⭐⭐⭐⭐
+                </h3>
+
+                <strong>
+                    {{ statistics.five_star_count }}
+                </strong>
+
+                <small>
+                    5 yıldız veren kullanıcı
+                </small>
+
+            </article>
+
+
+            <article class="admin-dashboard-card">
+
+                <h3>
+                    ⭐⭐⭐⭐
+                </h3>
+
+                <strong>
+                    {{ statistics.four_star_count }}
+                </strong>
+
+                <small>
+                    4 yıldız veren kullanıcı
+                </small>
+
+            </article>
+
+
+            <article class="admin-dashboard-card">
+
+                <h3>
+                    ⭐⭐⭐
+                </h3>
+
+                <strong>
+                    {{ statistics.three_star_count }}
+                </strong>
+
+                <small>
+                    3 yıldız veren kullanıcı
+                </small>
+
+            </article>
+
+
+            <article class="admin-dashboard-card">
+
+                <h3>
+                    ⭐⭐
+                </h3>
+
+                <strong>
+                    {{ statistics.two_star_count }}
+                </strong>
+
+                <small>
+                    2 yıldız veren kullanıcı
+                </small>
+
+            </article>
+
+
+            <article class="admin-dashboard-card">
+
+                <h3>
+                    ⭐
+                </h3>
+
+                <strong>
+                    {{ statistics.one_star_count }}
+                </strong>
+
+                <small>
+                    1 yıldız veren kullanıcı
+                </small>
+
+            </article>
+
+        </section>
 
     </section>
 
@@ -214,8 +324,8 @@
             </h2>
 
             <p>
-                Soru geçmişini, kategorileri ve geri bildirim
-                sonuçlarını Excel dosyası olarak dışa aktarın.
+                Soru geçmişini, kategorileri ve yıldız
+                değerlendirmelerini Excel dosyası olarak dışa aktarın.
             </p>
 
             <a
@@ -311,7 +421,7 @@
                         <th>Kategori</th>
                         <th>Güven</th>
                         <th>Eşleşme</th>
-                        <th>Geri Bildirim</th>
+                        <th>Puan</th>
                     </tr>
 
                 </thead>
@@ -365,14 +475,10 @@
 
                             <td>
 
-                                {% if chat.feedback == "positive" %}
-                                    👍 Olumlu
-
-                                {% elif chat.feedback == "negative" %}
-                                    👎 Olumsuz
-
+                                {% if chat.rating %}
+                                    {{ chat.rating }} / 5 ⭐
                                 {% else %}
-                                    ⏳ Bekliyor
+                                    ⏳ Puanlanmadı
                                 {% endif %}
 
                             </td>

@@ -676,6 +676,159 @@ def calculate_statistics(chat_history):
         for score in confidence_scores
         if score < 40
     )
+    # ==============================================
+    # YILDIZ DEĞERLENDİRME İSTATİSTİKLERİ
+    # ==============================================
+
+    ratings = []
+
+    for chat in prepared_history:
+
+        rating_value = chat.get(
+            "rating"
+        )
+
+        if rating_value in [
+            None,
+            ""
+        ]:
+            continue
+
+        try:
+
+            rating = int(
+                rating_value
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+            continue
+
+        if 1 <= rating <= 5:
+
+            ratings.append(
+                rating
+            )
+
+    total_ratings = len(
+        ratings
+    )
+
+    if total_ratings > 0:
+
+        average_rating = round(
+            sum(ratings)
+            / total_ratings,
+            1
+        )
+
+    else:
+
+        average_rating = 0
+
+    rating_distribution = {
+        1: ratings.count(1),
+        2: ratings.count(2),
+        3: ratings.count(3),
+        4: ratings.count(4),
+        5: ratings.count(5)
+    }
+
+    five_star_count = (
+        rating_distribution[5]
+    )
+
+    four_star_count = (
+        rating_distribution[4]
+    )
+
+    three_star_count = (
+        rating_distribution[3]
+    )
+
+    two_star_count = (
+        rating_distribution[2]
+    )
+
+    one_star_count = (
+        rating_distribution[1]
+    )
+
+    rated_chats = []
+
+    for chat in prepared_history:
+
+        try:
+
+            rating = int(
+                chat.get(
+                    "rating",
+                    0
+                )
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            rating = 0
+
+        if 1 <= rating <= 5:
+
+            rated_chats.append(
+                {
+                    "id": chat.get(
+                        "id",
+                        ""
+                    ),
+                    "question": chat.get(
+                        "question",
+                        "-"
+                    ),
+                    "answer": chat.get(
+                        "answer",
+                        "-"
+                    ),
+                    "category_name": chat.get(
+                        "category_name",
+                        "Diğer"
+                    ),
+                    "rating": rating,
+                    "created_at": chat.get(
+                        "created_at",
+                        "-"
+                    )
+                }
+            )
+
+    highest_rated_chat = None
+    lowest_rated_chat = None
+
+    if rated_chats:
+
+        highest_rated_chat = max(
+            rated_chats,
+            key=lambda item: item["rating"]
+        )
+
+        lowest_rated_chat = min(
+            rated_chats,
+            key=lambda item: item["rating"]
+        )
+
+    latest_rated_chats = sorted(
+        rated_chats,
+        key=lambda item: str(
+            item.get(
+                "created_at",
+                ""
+            )
+        ),
+        reverse=True
+    )[:10]
 
     suggestion_count = sum(
         1
@@ -760,7 +913,18 @@ def calculate_statistics(chat_history):
         "failed_match_count": failed_match_count,
         "low_confidence_questions": (
             low_confidence_questions[:10]
-        )
+        ),
+        "total_ratings": total_ratings,
+        "average_rating": average_rating,
+        "rating_distribution": rating_distribution,
+        "five_star_count": five_star_count,
+        "four_star_count": four_star_count,
+        "three_star_count": three_star_count,
+        "two_star_count": two_star_count,
+        "one_star_count": one_star_count,
+        "highest_rated_chat": highest_rated_chat,
+        "lowest_rated_chat": lowest_rated_chat,
+        "latest_rated_chats": latest_rated_chats
     }
 def normalize_question_text(text):
     """
