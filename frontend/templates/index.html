@@ -434,6 +434,75 @@
                                     <p class="answer-text">
                                         {{ chat.answer }}
                                     </p>
+                                    {% if chat.match_type == "exact" or chat.match_type == "hybrid" %}
+
+    <div class="ai-match-info">
+
+        <div class="confidence-row">
+
+            <span>
+                Güven oranı
+            </span>
+
+            <strong>
+                %{{ chat.confidence_score }}
+            </strong>
+
+        </div>
+
+        <div class="confidence-bar">
+
+            <div
+                class="confidence-fill"
+                style="width: {{ chat.confidence_score }}%;"
+            ></div>
+
+        </div>
+
+        <p class="confidence-level">
+
+            Güven seviyesi:
+            <strong>
+                {{ chat.confidence_level }}
+            </strong>
+
+        </p>
+
+        {% if chat.matched_question %}
+
+            <p class="matched-question">
+
+                Eşleşen soru:
+                <strong>
+                    {{ chat.matched_question }}
+                </strong>
+
+            </p>
+
+        {% endif %}
+
+    </div>
+
+{% elif chat.match_type == "suggestion" and chat.suggestion %}
+
+    <div class="suggestion-box">
+
+        <p>
+            Bunu mu demek istediniz?
+        </p>
+
+        <button
+            type="button"
+            class="suggestion-button"
+            data-category="{{ chat.category }}"
+            data-question="{{ chat.suggestion }}"
+        >
+            {{ chat.suggestion }}
+        </button>
+
+    </div>
+
+{% endif %}
 
                                     <div class="answer-actions">
 
@@ -777,7 +846,36 @@
                     : "🌙 Koyu Mod";
         }
 
+/* ÖNERİLEN SORUYU TEKRAR SORMA */
 
+const suggestionButtons =
+    document.querySelectorAll(".suggestion-button");
+
+suggestionButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+        const suggestedQuestion =
+            button.dataset.question || "";
+
+        const suggestedCategory =
+            button.dataset.category || "";
+
+        categoryBox.value = suggestedCategory;
+
+        showCategoryQuestions(
+            suggestedCategory
+        );
+
+        questionBox.value =
+            suggestedQuestion;
+
+        questionBox.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+
+        questionBox.focus();
+    });
+});
         function loadSavedTheme() {
             const savedTheme =
                 localStorage.getItem("smartSupportTheme");

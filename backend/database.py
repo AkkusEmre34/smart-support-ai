@@ -1,23 +1,101 @@
 import sqlite3
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 
 PROJECT_FOLDER = Path(__file__).resolve().parent.parent
-DATABASE_FILE = PROJECT_FOLDER / "data" / "smart_support.db"
+
+DATABASE_FILE = (
+    PROJECT_FOLDER
+    / "data"
+    / "smart_support.db"
+)
 
 
 def get_connection() -> sqlite3.Connection:
-    connection = sqlite3.connect(DATABASE_FILE)
+    """
+    SQLite veritabanı bağlantısını oluşturur.
+    """
+
+    connection = sqlite3.connect(
+        DATABASE_FILE
+    )
+
     connection.row_factory = sqlite3.Row
 
     return connection
 
 
+def column_exists(
+    connection: sqlite3.Connection,
+    table_name: str,
+    column_name: str
+) -> bool:
+    """
+    Belirtilen sütunun tabloda bulunup
+    bulunmadığını kontrol eder.
+    """
+
+    rows = connection.execute(
+        "PRAGMA table_info({})".format(
+            table_name
+        )
+    ).fetchall()
+
+    return any(
+        row["name"] == column_name
+        for row in rows
+    )
+
+
+def add_missing_columns(
+    connection: sqlite3.Connection
+) -> None:
+    """
+    Eski veritabanına yeni yapay zekâ
+    sütunlarını güvenli şekilde ekler.
+    """
+
+    columns = {
+        "confidence_score": "INTEGER DEFAULT 0",
+        "confidence_level": "TEXT",
+        "matched_question": "TEXT",
+        "suggestion": "TEXT",
+        "match_type": "TEXT"
+    }
+
+    for column_name, column_definition in columns.items():
+
+        if not column_exists(
+            connection,
+            "chats",
+            column_name
+        ):
+
+            connection.execute(
+                """
+                ALTER TABLE chats
+                ADD COLUMN {} {}
+                """.format(
+                    column_name,
+                    column_definition
+                )
+            )
+
+
 def init_database() -> None:
-    DATABASE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    """
+    Sohbet tablosunu oluşturur ve eksik
+    sütunları mevcut veritabanına ekler.
+    """
+
+    DATABASE_FILE.parent.mkdir(
+        parents=True,
+        exist_ok=True
+    )
 
     with get_connection() as connection:
+
         connection.execute(
             """
             CREATE TABLE IF NOT EXISTS chats (
@@ -27,9 +105,18 @@ def init_database() -> None:
                 category TEXT NOT NULL,
                 category_name TEXT NOT NULL,
                 feedback TEXT,
+                confidence_score INTEGER DEFAULT 0,
+                confidence_level TEXT,
+                matched_question TEXT,
+                suggestion TEXT,
+                match_type TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """
+        )
+
+        add_missing_columns(
+            connection
         )
 
         connection.commit()
@@ -40,9 +127,20 @@ def add_chat(
     question: str,
     answer: str,
     category: str,
-    category_name: str
+    category_name: str,
+    confidence_score: int = 0,
+    confidence_level: str = "Yetersiz",
+    matched_question: Optional[str] = None,
+    suggestion: Optional[str] = None,
+    match_type: str = "not_found"
 ) -> None:
+    """
+    Kullanıcı sorusunu, yapay zekâ cevabını ve
+    eşleşme bilgilerini veritabanına kaydeder.
+    """
+
     with get_connection() as connection:
+
         connection.execute(
             """
             INSERT INTO chats (
@@ -51,16 +149,38 @@ def add_chat(
                 answer,
                 category,
                 category_name,
-                feedback
+                feedback,
+                confidence_score,
+                confidence_level,
+                matched_question,
+                suggestion,
+                match_type
             )
-            VALUES (?, ?, ?, ?, ?, NULL)
+            VALUES (
+                ?,
+                ?,
+                ?,
+                ?,
+                ?,
+                NULL,
+                ?,
+                ?,
+                ?,
+                ?,
+                ?
+            )
             """,
             (
                 chat_id,
                 question,
                 answer,
                 category,
-                category_name
+                category_name,
+                confidence_score,
+                confidence_level,
+                matched_question,
+                suggestion,
+                match_type
             )
         )
 
@@ -68,7 +188,13 @@ def add_chat(
 
 
 def get_all_chats() -> list[dict[str, Any]]:
+    """
+    Bütün sohbet kayıtlarını tarih sırasına
+    göre getirir.
+    """
+
     with get_connection() as connection:
+
         rows = connection.execute(
             """
             SELECT
@@ -78,24 +204,92 @@ def get_all_chats() -> list[dict[str, Any]]:
                 category,
                 category_name,
                 feedback,
+                confidence_score,
+                confidence_level,
+                matched_question,
+                suggestion,
+                match_type,
                 created_at
             FROM chats
             ORDER BY created_at ASC
             """
         ).fetchall()
 
-    return [dict(row) for row in rows]
+    return [
+        dict(row)
+        for row in rows
+    ]
 
 
-def update_feedback(chat_id: str, feedback: str) -> bool:
+def get_chat_by_id(
+    chat_id: str
+) -> Optional[dict[str, Any]]:
+    """
+    Belirtilen kimliğe sahip sohbet
+    kaydını getirir.
+    """
+
     with get_connection() as connection:
+
+        row = connection.execute(
+            """
+            SELECT
+                id,
+                question,
+                answer,
+                category,
+                category_name,
+                feedback,
+                confidence_score,
+                confidence_level,
+                matched_question,
+                suggestion,
+                match_type,
+                created_at
+            FROM chats
+            WHERE id = ?
+            """,
+            (
+                chat_id,
+            )
+        ).fetchone()
+
+    if row is None:
+        return None
+
+    return dict(
+        row
+    )
+
+
+def update_feedback(
+    chat_id: str,
+    feedback: str
+) -> bool:
+    """
+    Sohbet kaydının kullanıcı geri
+    bildirimini günceller.
+    """
+
+    if feedback not in [
+        "positive",
+        "negative"
+    ]:
+
+        return False
+
+    with get_connection() as connection:
+
         cursor = connection.execute(
             """
             UPDATE chats
             SET feedback = ?
             WHERE id = ?
             """,
-            (feedback, chat_id)
+            (
+                feedback,
+                chat_id
+            )
         )
 
         connection.commit()
@@ -104,6 +298,16 @@ def update_feedback(chat_id: str, feedback: str) -> bool:
 
 
 def clear_all_chats() -> None:
+    """
+    Bütün sohbet geçmişini siler.
+    """
+
     with get_connection() as connection:
-        connection.execute("DELETE FROM chats")
+
+        connection.execute(
+            """
+            DELETE FROM chats
+            """
+        )
+
         connection.commit()

@@ -42,7 +42,7 @@ from reportlab.platypus import (
 )
 
 from ai_engine import (
-    find_answer,
+    find_answer_details,
     get_questions_by_category,
     load_questions
 )
@@ -827,7 +827,6 @@ def home():
         ).strip()
 
         if category not in CATEGORIES:
-
             category = "diger"
 
         if not question:
@@ -841,9 +840,45 @@ def home():
                 url_for("home")
             )
 
-        answer = find_answer(
+        answer_details = find_answer_details(
             question,
             category
+        )
+
+        answer = str(
+            answer_details.get(
+                "answer",
+                ""
+            )
+        )
+
+        confidence_score = int(
+            answer_details.get(
+                "confidence_score",
+                0
+            )
+        )
+
+        confidence_level = str(
+            answer_details.get(
+                "confidence_level",
+                "Yetersiz"
+            )
+        )
+
+        matched_question = answer_details.get(
+            "matched_question"
+        )
+
+        suggestion = answer_details.get(
+            "suggestion"
+        )
+
+        match_type = str(
+            answer_details.get(
+                "match_type",
+                "not_found"
+            )
         )
 
         chat_id = str(
@@ -855,7 +890,12 @@ def home():
             question=question,
             answer=answer,
             category=category,
-            category_name=CATEGORIES[category]
+            category_name=CATEGORIES[category],
+            confidence_score=confidence_score,
+            confidence_level=confidence_level,
+            matched_question=matched_question,
+            suggestion=suggestion,
+            match_type=match_type
         )
 
         return redirect(
@@ -869,10 +909,8 @@ def home():
     )
 
     category_questions = {
-        category_key: (
-            get_questions_by_category(
-                category_key
-            )
+        category_key: get_questions_by_category(
+            category_key
         )
         for category_key in CATEGORIES
     }
@@ -888,7 +926,6 @@ def home():
         category_questions=category_questions,
         statistics=statistics
     )
-
 
 # ==================================================
 # YÖNETİCİ GİRİŞ VE ÇIKIŞ
