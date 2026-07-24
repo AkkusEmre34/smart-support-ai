@@ -206,6 +206,195 @@
 
         <div>
 
+<section class="admin-content">
+
+    <div class="admin-content-header">
+
+        <div>
+
+            <h2>
+                📊 Yıldız Dağılım Grafiği
+            </h2>
+
+            <p>
+                Kullanıcıların verdiği puanların görsel dağılımı
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="rating-chart">
+
+        <div class="rating-chart-row">
+
+            <div class="rating-chart-label">
+                5 ⭐
+            </div>
+
+            <div class="rating-chart-track">
+
+                <div
+                    class="rating-chart-bar"
+                    style="
+                        width:
+                        {% if statistics.total_ratings > 0 %}
+                            {{
+                                statistics.five_star_count
+                                / statistics.total_ratings
+                                * 100
+                            }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    "
+                ></div>
+
+            </div>
+
+            <strong>
+                {{ statistics.five_star_count }}
+            </strong>
+
+        </div>
+
+
+        <div class="rating-chart-row">
+
+            <div class="rating-chart-label">
+                4 ⭐
+            </div>
+
+            <div class="rating-chart-track">
+
+                <div
+                    class="rating-chart-bar"
+                    style="
+                        width:
+                        {% if statistics.total_ratings > 0 %}
+                            {{
+                                statistics.four_star_count
+                                / statistics.total_ratings
+                                * 100
+                            }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    "
+                ></div>
+
+            </div>
+
+            <strong>
+                {{ statistics.four_star_count }}
+            </strong>
+
+        </div>
+
+
+        <div class="rating-chart-row">
+
+            <div class="rating-chart-label">
+                3 ⭐
+            </div>
+
+            <div class="rating-chart-track">
+
+                <div
+                    class="rating-chart-bar"
+                    style="
+                        width:
+                        {% if statistics.total_ratings > 0 %}
+                            {{
+                                statistics.three_star_count
+                                / statistics.total_ratings
+                                * 100
+                            }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    "
+                ></div>
+
+            </div>
+
+            <strong>
+                {{ statistics.three_star_count }}
+            </strong>
+
+        </div>
+
+
+        <div class="rating-chart-row">
+
+            <div class="rating-chart-label">
+                2 ⭐
+            </div>
+
+            <div class="rating-chart-track">
+
+                <div
+                    class="rating-chart-bar"
+                    style="
+                        width:
+                        {% if statistics.total_ratings > 0 %}
+                            {{
+                                statistics.two_star_count
+                                / statistics.total_ratings
+                                * 100
+                            }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    "
+                ></div>
+
+            </div>
+
+            <strong>
+                {{ statistics.two_star_count }}
+            </strong>
+
+        </div>
+
+
+        <div class="rating-chart-row">
+
+            <div class="rating-chart-label">
+                1 ⭐
+            </div>
+
+            <div class="rating-chart-track">
+
+                <div
+                    class="rating-chart-bar"
+                    style="
+                        width:
+                        {% if statistics.total_ratings > 0 %}
+                            {{
+                                statistics.one_star_count
+                                / statistics.total_ratings
+                                * 100
+                            }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    "
+                ></div>
+
+            </div>
+
+            <strong>
+                {{ statistics.one_star_count }}
+            </strong>
+
+        </div>
+
+    </div>
+
+</section>
+
             <h2>
                 🏆 Değerlendirme Sonuçları
             </h2>
