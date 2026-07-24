@@ -200,6 +200,101 @@
 
     </section>
 
+<section class="admin-content">
+
+    <div class="admin-content-header">
+
+        <div>
+
+            <h2>
+                🏆 Değerlendirme Sonuçları
+            </h2>
+
+            <p>
+                Kullanıcıların en yüksek ve en düşük puan verdiği cevaplar
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <section class="admin-dashboard">
+
+        <article class="admin-dashboard-card">
+
+            <h3>
+                🥇 En Yüksek Puanlı Cevap
+            </h3>
+
+            {% if statistics.highest_rated_chat %}
+
+                <strong>
+                    {{ statistics.highest_rated_chat.rating }} / 5 ⭐
+                </strong>
+
+                <small>
+                    Soru:
+                    {{ statistics.highest_rated_chat.question }}
+                </small>
+
+                <p>
+                    {{ statistics.highest_rated_chat.answer }}
+                </p>
+
+            {% else %}
+
+                <strong>
+                    -
+                </strong>
+
+                <small>
+                    Henüz değerlendirme bulunmuyor.
+                </small>
+
+            {% endif %}
+
+        </article>
+
+
+        <article class="admin-dashboard-card">
+
+            <h3>
+                ⚠️ En Düşük Puanlı Cevap
+            </h3>
+
+            {% if statistics.lowest_rated_chat %}
+
+                <strong>
+                    {{ statistics.lowest_rated_chat.rating }} / 5 ⭐
+                </strong>
+
+                <small>
+                    Soru:
+                    {{ statistics.lowest_rated_chat.question }}
+                </small>
+
+                <p>
+                    {{ statistics.lowest_rated_chat.answer }}
+                </p>
+
+            {% else %}
+
+                <strong>
+                    -
+                </strong>
+
+                <small>
+                    Henüz değerlendirme bulunmuyor.
+                </small>
+
+            {% endif %}
+
+        </article>
+
+    </section>
+
+</section>
 
     <section class="admin-content">
 
