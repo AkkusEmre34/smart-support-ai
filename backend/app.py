@@ -1,7 +1,10 @@
 import json
 import os
+
 from collections import Counter
+from datetime import datetime
 from functools import wraps
+from io import BytesIO
 from pathlib import Path
 from uuid import uuid4
 
@@ -11,8 +14,28 @@ from flask import (
     redirect,
     render_template,
     request,
+    send_file,
     session,
     url_for
+)
+
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.utils import get_column_letter
+
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import cm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus import (
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle
 )
 
 from ai_engine import (
@@ -29,6 +52,10 @@ from database import (
     update_feedback
 )
 
+
+# ==================================================
+# PROJE DOSYA YOLLARI
+# ==================================================
 
 PROJECT_FOLDER = Path(__file__).resolve().parent.parent
 
@@ -50,6 +77,16 @@ QUESTIONS_FILE = (
     / "questions.json"
 )
 
+DATABASE_FILE = (
+    PROJECT_FOLDER
+    / "data"
+    / "smart_support.db"
+)
+
+
+# ==================================================
+# KATEGORİLER
+# ==================================================
 
 CATEGORIES = {
     "internet": "🌐 İnternet",
@@ -63,6 +100,10 @@ CATEGORIES = {
 }
 
 
+# ==================================================
+# YÖNETİCİ BİLGİLERİ
+# ==================================================
+
 ADMIN_USERNAME = os.getenv(
     "ADMIN_USERNAME",
     "admin"
@@ -74,16 +115,15 @@ ADMIN_PASSWORD = os.getenv(
 )
 
 
+# ==================================================
+# FLASK UYGULAMASI
+# ==================================================
+
 app = Flask(
     __name__,
-    template_folder=str(
-        TEMPLATE_FOLDER
-    ),
-    static_folder=str(
-        STATIC_FOLDER
-    )
+    template_folder=str(TEMPLATE_FOLDER),
+    static_folder=str(STATIC_FOLDER)
 )
-
 
 app.secret_key = os.getenv(
     "SECRET_KEY",
@@ -91,32 +131,32 @@ app.secret_key = os.getenv(
 )
 
 
+# Veritabanı tablolarını hazırlar.
 init_database()
 
 
+# ==================================================
+# YARDIMCI FONKSİYONLAR
+# ==================================================
+
 def admin_login_required(view_function):
     """
-    Yönetici girişi yapılmadan korunan
-    admin sayfalarına erişimi engeller.
+    Yönetici girişi yapılmadan admin
+    sayfalarına erişilmesini engeller.
     """
 
     @wraps(view_function)
     def wrapped_view(*args, **kwargs):
 
-        if not session.get(
-            "admin_logged_in"
-        ):
+        if not session.get("admin_logged_in"):
 
             flash(
-                "Yönetici paneline erişmek için "
-                "giriş yapmalısınız.",
+                "Yönetici paneline erişmek için giriş yapmalısınız.",
                 "error"
             )
 
             return redirect(
-                url_for(
-                    "admin_login"
-                )
+                url_for("admin_login")
             )
 
         return view_function(
@@ -129,8 +169,8 @@ def admin_login_required(view_function):
 
 def save_questions(support_items):
     """
-    Bilgi tabanındaki kayıtları
-    questions.json dosyasına kaydeder.
+    Bilgi tabanı kayıtlarını questions.json
+    dosyasına kaydeder.
     """
 
     try:
@@ -157,54 +197,99 @@ def save_questions(support_items):
     except OSError as error:
 
         print(
-            "Bilgi tabanı kaydedilirken "
-            "hata oluştu:",
+            "Bilgi tabanı kaydedilemedi:",
             error
         )
 
         return False
 
 
+def convert_chat_to_dictionary(chat):
+    """
+    Veritabanından gelen sohbet kaydını
+    sözlük biçimine dönüştürür.
+    """
+
+    if isinstance(chat, dict):
+        return chat
+
+    try:
+        return dict(chat)
+
+    except (TypeError, ValueError):
+        return {}
+
+
+def prepare_chat_history(chat_history):
+    """
+    Sohbet kayıtlarının tamamını güvenli
+    sözlük biçimine dönüştürür.
+    """
+
+    return [
+        convert_chat_to_dictionary(chat)
+        for chat in chat_history
+    ]
+
+
+def get_chat_value(chat, possible_keys, default="-"):
+    """
+    Bir sohbet kaydındaki olası sütun
+    isimlerinden ilk bulunan değeri döndürür.
+    """
+
+    chat_dictionary = convert_chat_to_dictionary(
+        chat
+    )
+
+    for key in possible_keys:
+
+        value = chat_dictionary.get(key)
+
+        if value is not None and value != "":
+            return value
+
+    return default
+
+
 def calculate_statistics(chat_history):
     """
-    Sohbet geçmişinden yönetici paneli
+    Sohbet geçmişinden dashboard ve rapor
     istatistiklerini hesaplar.
     """
 
-    total_questions = len(
+    prepared_history = prepare_chat_history(
         chat_history
+    )
+
+    total_questions = len(
+        prepared_history
     )
 
     positive_feedback = sum(
         1
-        for chat in chat_history
-        if chat.get(
-            "feedback"
-        ) == "positive"
+        for chat in prepared_history
+        if chat.get("feedback") == "positive"
     )
 
     negative_feedback = sum(
         1
-        for chat in chat_history
-        if chat.get(
-            "feedback"
-        ) == "negative"
+        for chat in prepared_history
+        if chat.get("feedback") == "negative"
     )
 
     unanswered_feedback = sum(
         1
-        for chat in chat_history
-        if not chat.get(
-            "feedback"
-        )
+        for chat in prepared_history
+        if chat.get("feedback") not in [
+            "positive",
+            "negative"
+        ]
     )
 
     category_counter = Counter(
-        chat.get(
-            "category",
-            "diger"
-        )
-        for chat in chat_history
+        chat.get("category", "diger")
+        for chat in prepared_history
     )
 
     if category_counter:
@@ -212,32 +297,21 @@ def calculate_statistics(chat_history):
         (
             most_used_category_key,
             most_used_category_count
-        ) = category_counter.most_common(
-            1
-        )[0]
+        ) = category_counter.most_common(1)[0]
 
-        most_used_category_name = (
-            CATEGORIES.get(
-                most_used_category_key,
-                CATEGORIES["diger"]
-            )
+        most_used_category_name = CATEGORIES.get(
+            most_used_category_key,
+            CATEGORIES["diger"]
         )
 
     else:
 
-        most_used_category_name = (
-            "Henüz veri yok"
-        )
-
+        most_used_category_name = "Henüz veri yok"
         most_used_category_count = 0
-
 
     category_statistics = []
 
-    for (
-        category_key,
-        category_name
-    ) in CATEGORIES.items():
+    for category_key, category_name in CATEGORIES.items():
 
         category_statistics.append(
             {
@@ -250,31 +324,174 @@ def calculate_statistics(chat_history):
             }
         )
 
-
     return {
-        "total_questions": (
-            total_questions
-        ),
-        "positive_feedback": (
-            positive_feedback
-        ),
-        "negative_feedback": (
-            negative_feedback
-        ),
-        "unanswered_feedback": (
-            unanswered_feedback
-        ),
+        "total_questions": total_questions,
+        "positive_feedback": positive_feedback,
+        "negative_feedback": negative_feedback,
+        "unanswered_feedback": unanswered_feedback,
         "most_used_category_name": (
             most_used_category_name
         ),
         "most_used_category_count": (
             most_used_category_count
         ),
-        "category_statistics": (
-            category_statistics
-        )
+        "category_statistics": category_statistics
     }
 
+
+def format_report_date(date_value):
+    """
+    Tarih bilgisini raporlarda okunabilir
+    biçime dönüştürür.
+    """
+
+    if not date_value:
+        return "-"
+
+    if isinstance(date_value, datetime):
+
+        return date_value.strftime(
+            "%d.%m.%Y %H:%M"
+        )
+
+    date_text = str(date_value)
+
+    date_formats = [
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%dT%H:%M:%S",
+        "%d.%m.%Y %H:%M"
+    ]
+
+    for date_format in date_formats:
+
+        try:
+
+            parsed_date = datetime.strptime(
+                date_text,
+                date_format
+            )
+
+            return parsed_date.strftime(
+                "%d.%m.%Y %H:%M"
+            )
+
+        except ValueError:
+            continue
+
+    try:
+
+        parsed_date = datetime.fromisoformat(
+            date_text.replace(
+                "Z",
+                "+00:00"
+            )
+        )
+
+        return parsed_date.strftime(
+            "%d.%m.%Y %H:%M"
+        )
+
+    except ValueError:
+        return date_text
+
+
+def format_feedback(feedback):
+    """
+    Veritabanındaki geri bildirim değerini
+    Türkçe rapor metnine dönüştürür.
+    """
+
+    if feedback == "positive":
+        return "Olumlu"
+
+    if feedback == "negative":
+        return "Olumsuz"
+
+    return "Değerlendirilmedi"
+
+
+def register_pdf_fonts():
+    """
+    PDF dosyalarında Türkçe karakterlerin
+    düzgün görünmesi için yazı tipi kaydeder.
+    """
+
+    regular_font_paths = [
+        r"C:\Windows\Fonts\arial.ttf",
+        r"C:\Windows\Fonts\calibri.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+    ]
+
+    bold_font_paths = [
+        r"C:\Windows\Fonts\arialbd.ttf",
+        r"C:\Windows\Fonts\calibrib.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+    ]
+
+    regular_font_path = None
+    bold_font_path = None
+
+    for font_path in regular_font_paths:
+
+        if os.path.exists(font_path):
+
+            regular_font_path = font_path
+            break
+
+    for font_path in bold_font_paths:
+
+        if os.path.exists(font_path):
+
+            bold_font_path = font_path
+            break
+
+    regular_font_name = "Helvetica"
+    bold_font_name = "Helvetica-Bold"
+
+    try:
+
+        if regular_font_path:
+
+            pdfmetrics.registerFont(
+                TTFont(
+                    "SmartSupportRegular",
+                    regular_font_path
+                )
+            )
+
+            regular_font_name = (
+                "SmartSupportRegular"
+            )
+
+        if bold_font_path:
+
+            pdfmetrics.registerFont(
+                TTFont(
+                    "SmartSupportBold",
+                    bold_font_path
+                )
+            )
+
+            bold_font_name = (
+                "SmartSupportBold"
+            )
+
+    except Exception as error:
+
+        print(
+            "PDF yazı tipi kaydedilemedi:",
+            error
+        )
+
+    return (
+        regular_font_name,
+        bold_font_name
+    )
+
+
+# ==================================================
+# ANA KULLANICI SAYFASI
+# ==================================================
 
 @app.route(
     "/",
@@ -298,76 +515,73 @@ def home():
 
         category = request.form.get(
             "category",
-            ""
+            "diger"
         ).strip()
 
-
         if category not in CATEGORIES:
-
             category = "diger"
 
+        if not question:
 
-        if question:
-
-            answer = find_answer(
-                question,
-                category
+            flash(
+                "Lütfen bir teknik destek sorusu yazın.",
+                "error"
             )
 
-            chat_id = str(
-                uuid4()
+            return redirect(
+                url_for("home")
             )
 
-            add_chat(
-                chat_id=chat_id,
-                question=question,
-                answer=answer,
-                category=category,
-                category_name=(
-                    CATEGORIES[
-                        category
-                    ]
-                )
-            )
-
-
-        return redirect(
-            url_for(
-                "home"
-            )
+        answer = find_answer(
+            question,
+            category
         )
 
+        chat_id = str(
+            uuid4()
+        )
 
-    chat_history = get_all_chats()
+        add_chat(
+            chat_id=chat_id,
+            question=question,
+            answer=answer,
+            category=category,
+            category_name=CATEGORIES[category]
+        )
 
+        return redirect(
+            url_for("home")
+            + "#chat-"
+            + chat_id
+        )
+
+    chat_history = prepare_chat_history(
+        get_all_chats()
+    )
 
     category_questions = {
-
-        category_key:
-            get_questions_by_category(
-                category_key
-            )
-
-        for category_key
-        in CATEGORIES
+        category_key: get_questions_by_category(
+            category_key
+        )
+        for category_key in CATEGORIES
     }
-
 
     statistics = calculate_statistics(
         chat_history
     )
 
-
     return render_template(
         "index.html",
         chat_history=chat_history,
         categories=CATEGORIES,
-        category_questions=(
-            category_questions
-        ),
+        category_questions=category_questions,
         statistics=statistics
     )
 
+
+# ==================================================
+# YÖNETİCİ GİRİŞ VE ÇIKIŞ
+# ==================================================
 
 @app.route(
     "/admin/login",
@@ -381,16 +595,11 @@ def admin_login():
     Yönetici giriş sayfası.
     """
 
-    if session.get(
-        "admin_logged_in"
-    ):
+    if session.get("admin_logged_in"):
 
         return redirect(
-            url_for(
-                "admin_panel"
-            )
+            url_for("admin_panel")
         )
-
 
     if request.method == "POST":
 
@@ -404,7 +613,6 @@ def admin_login():
             ""
         )
 
-
         if (
             username == ADMIN_USERNAME
             and password == ADMIN_PASSWORD
@@ -412,89 +620,72 @@ def admin_login():
 
             session.clear()
 
-            session[
-                "admin_logged_in"
-            ] = True
-
-            session[
-                "admin_username"
-            ] = username
-
+            session["admin_logged_in"] = True
+            session["admin_username"] = username
 
             flash(
-                "Yönetici paneline başarıyla "
-                "giriş yaptınız.",
+                "Yönetici paneline başarıyla giriş yaptınız.",
                 "success"
             )
 
-
             return redirect(
-                url_for(
-                    "admin_panel"
-                )
+                url_for("admin_panel")
             )
-
 
         flash(
             "Kullanıcı adı veya şifre yanlış.",
             "error"
         )
 
-
     return render_template(
         "admin_login.html"
     )
 
 
-@app.route(
-    "/admin/logout"
-)
+@app.route("/admin/logout")
 def admin_logout():
     """
-    Yönetici oturumunu kapatır.
+    Yönetici hesabından çıkış yapar.
     """
 
     session.clear()
-
 
     flash(
         "Yönetici hesabından çıkış yapıldı.",
         "success"
     )
 
-
     return redirect(
-        url_for(
-            "admin_login"
-        )
+        url_for("admin_login")
     )
 
 
-@app.route(
-    "/admin"
-)
+# ==================================================
+# ADMIN DASHBOARD
+# ==================================================
+
+@app.route("/admin")
 @admin_login_required
 def admin_panel():
     """
-    Yönetici dashboard sayfası.
+    Admin dashboard sayfası.
     """
 
     support_items = load_questions()
 
-    chat_history = get_all_chats()
+    chat_history = prepare_chat_history(
+        get_all_chats()
+    )
 
     statistics = calculate_statistics(
         chat_history
     )
 
-
     return render_template(
         "admin/dashboard.html",
         active_page="dashboard",
         categories=CATEGORIES,
-        total_items=len(
-            support_items
-        ),
+        total_items=len(support_items),
         statistics=statistics,
         admin_username=session.get(
             "admin_username",
@@ -503,27 +694,25 @@ def admin_panel():
     )
 
 
-@app.route(
-    "/admin/knowledge"
-)
+# ==================================================
+# BİLGİ TABANI
+# ==================================================
+
+@app.route("/admin/knowledge")
 @admin_login_required
 def admin_knowledge():
     """
-    Bilgi tabanı kayıtlarının bulunduğu
-    yönetici sayfası.
+    Bilgi tabanı kayıtlarını gösterir.
     """
 
     support_items = load_questions()
-
 
     return render_template(
         "admin/knowledge.html",
         active_page="knowledge",
         support_items=support_items,
         categories=CATEGORIES,
-        total_items=len(
-            support_items
-        ),
+        total_items=len(support_items),
         admin_username=session.get(
             "admin_username",
             "admin"
@@ -532,21 +721,348 @@ def admin_knowledge():
 
 
 @app.route(
-    "/admin/reports"
+    "/admin/add",
+    methods=["POST"]
 )
+@admin_login_required
+def add_support_item():
+    """
+    Bilgi tabanına yeni soru ve cevap ekler.
+    """
+
+    category = request.form.get(
+        "category",
+        ""
+    ).strip()
+
+    question = request.form.get(
+        "question",
+        ""
+    ).strip()
+
+    keywords_text = request.form.get(
+        "keywords",
+        ""
+    ).strip()
+
+    answer = request.form.get(
+        "answer",
+        ""
+    ).strip()
+
+    if category not in CATEGORIES:
+
+        flash(
+            "Lütfen geçerli bir kategori seçin.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_knowledge")
+        )
+
+    if not question:
+
+        flash(
+            "Soru alanı boş bırakılamaz.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_knowledge")
+        )
+
+    if not answer:
+
+        flash(
+            "Cevap alanı boş bırakılamaz.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_knowledge")
+        )
+
+    keywords = [
+        keyword.strip()
+        for keyword in keywords_text.split(",")
+        if keyword.strip()
+    ]
+
+    if not keywords:
+        keywords = [question]
+
+    support_items = load_questions()
+
+    question_lower = question.lower()
+
+    duplicate_question = any(
+        str(
+            item.get(
+                "question",
+                ""
+            )
+        ).strip().lower() == question_lower
+        for item in support_items
+    )
+
+    if duplicate_question:
+
+        flash(
+            "Bu soru bilgi tabanında zaten bulunuyor.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_knowledge")
+        )
+
+    support_items.append(
+        {
+            "category": category,
+            "question": question,
+            "keywords": keywords,
+            "answer": answer
+        }
+    )
+
+    if not save_questions(support_items):
+
+        flash(
+            "Kayıt eklenirken bir hata oluştu.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_knowledge")
+        )
+
+    flash(
+        "Yeni teknik destek kaydı başarıyla eklendi.",
+        "success"
+    )
+
+    return redirect(
+        url_for("admin_knowledge")
+    )
+
+
+@app.route(
+    "/admin/edit/<int:item_index>",
+    methods=["POST"]
+)
+@admin_login_required
+def edit_support_item(item_index):
+    """
+    Bilgi tabanındaki kaydı günceller.
+    """
+
+    support_items = load_questions()
+
+    if (
+        item_index < 0
+        or item_index >= len(support_items)
+    ):
+
+        flash(
+            "Düzenlemek istediğiniz kayıt bulunamadı.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_knowledge")
+        )
+
+    category = request.form.get(
+        "category",
+        ""
+    ).strip()
+
+    question = request.form.get(
+        "question",
+        ""
+    ).strip()
+
+    keywords_text = request.form.get(
+        "keywords",
+        ""
+    ).strip()
+
+    answer = request.form.get(
+        "answer",
+        ""
+    ).strip()
+
+    if category not in CATEGORIES:
+
+        flash(
+            "Lütfen geçerli bir kategori seçin.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_knowledge")
+        )
+
+    if not question:
+
+        flash(
+            "Soru alanı boş bırakılamaz.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_knowledge")
+        )
+
+    if not answer:
+
+        flash(
+            "Cevap alanı boş bırakılamaz.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_knowledge")
+        )
+
+    keywords = [
+        keyword.strip()
+        for keyword in keywords_text.split(",")
+        if keyword.strip()
+    ]
+
+    if not keywords:
+        keywords = [question]
+
+    question_lower = question.lower()
+
+    duplicate_question = any(
+        index != item_index
+        and str(
+            item.get(
+                "question",
+                ""
+            )
+        ).strip().lower() == question_lower
+        for index, item in enumerate(
+            support_items
+        )
+    )
+
+    if duplicate_question:
+
+        flash(
+            "Bu soru başka bir kayıtta zaten bulunuyor.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_knowledge")
+        )
+
+    support_items[item_index] = {
+        "category": category,
+        "question": question,
+        "keywords": keywords,
+        "answer": answer
+    }
+
+    if not save_questions(support_items):
+
+        flash(
+            "Kayıt düzenlenirken bir hata oluştu.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_knowledge")
+        )
+
+    flash(
+        "Teknik destek kaydı başarıyla güncellendi.",
+        "success"
+    )
+
+    return redirect(
+        url_for("admin_knowledge")
+    )
+
+
+@app.route(
+    "/admin/delete/<int:item_index>",
+    methods=["POST"]
+)
+@admin_login_required
+def delete_support_item(item_index):
+    """
+    Bilgi tabanındaki kaydı siler.
+    """
+
+    support_items = load_questions()
+
+    if (
+        item_index < 0
+        or item_index >= len(support_items)
+    ):
+
+        flash(
+            "Silmek istediğiniz kayıt bulunamadı.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_knowledge")
+        )
+
+    deleted_item = support_items.pop(
+        item_index
+    )
+
+    if not save_questions(support_items):
+
+        flash(
+            "Kayıt silinirken bir hata oluştu.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_knowledge")
+        )
+
+    flash(
+        "'{}' başarıyla silindi.".format(
+            deleted_item.get(
+                "question",
+                "Kayıt"
+            )
+        ),
+        "success"
+    )
+
+    return redirect(
+        url_for("admin_knowledge")
+    )
+
+
+# ==================================================
+# RAPORLAR SAYFASI
+# ==================================================
+
+@app.route("/admin/reports")
 @admin_login_required
 def admin_reports():
     """
-    Sistem raporlarının ve kategori
-    istatistiklerinin bulunduğu sayfa.
+    Sistem raporları sayfası.
     """
 
-    chat_history = get_all_chats()
+    chat_history = prepare_chat_history(
+        get_all_chats()
+    )
 
     statistics = calculate_statistics(
         chat_history
     )
-
 
     return render_template(
         "admin/reports.html",
@@ -560,13 +1076,844 @@ def admin_reports():
     )
 
 
-@app.route(
-    "/admin/settings"
-)
+# ==================================================
+# EXCEL RAPORU
+# ==================================================
+
+@app.route("/admin/reports/excel")
+@admin_login_required
+def download_excel_report():
+    """
+    Sohbet geçmişini ve istatistikleri
+    Excel dosyası olarak indirir.
+    """
+
+    chat_history = prepare_chat_history(
+        get_all_chats()
+    )
+
+    statistics = calculate_statistics(
+        chat_history
+    )
+
+    workbook = Workbook()
+
+    chat_sheet = workbook.active
+    chat_sheet.title = "Sohbet Geçmişi"
+
+    header_fill = PatternFill(
+        fill_type="solid",
+        fgColor="4F46E5"
+    )
+
+    header_font = Font(
+        color="FFFFFF",
+        bold=True
+    )
+
+    title_font = Font(
+        bold=True,
+        size=16,
+        color="312E81"
+    )
+
+    chat_sheet.merge_cells(
+        "A1:G1"
+    )
+
+    chat_sheet["A1"] = (
+        "Smart Support AI - Sohbet Raporu"
+    )
+
+    chat_sheet["A1"].font = title_font
+
+    chat_sheet["A1"].alignment = Alignment(
+        horizontal="center",
+        vertical="center"
+    )
+
+    chat_sheet.row_dimensions[1].height = 30
+
+    chat_sheet["A2"] = "Rapor Tarihi"
+
+    chat_sheet["B2"] = datetime.now().strftime(
+        "%d.%m.%Y %H:%M"
+    )
+
+    headers = [
+        "No",
+        "Soru",
+        "Cevap",
+        "Kategori",
+        "Geri Bildirim",
+        "Tarih",
+        "Kayıt Kimliği"
+    ]
+
+    header_row = 4
+
+    for column_index, header in enumerate(
+        headers,
+        start=1
+    ):
+
+        cell = chat_sheet.cell(
+            row=header_row,
+            column=column_index,
+            value=header
+        )
+
+        cell.fill = header_fill
+        cell.font = header_font
+
+        cell.alignment = Alignment(
+            horizontal="center",
+            vertical="center"
+        )
+
+    for row_index, chat in enumerate(
+        chat_history,
+        start=1
+    ):
+
+        excel_row = header_row + row_index
+
+        feedback = format_feedback(
+            get_chat_value(
+                chat,
+                ["feedback"],
+                ""
+            )
+        )
+
+        category = get_chat_value(
+            chat,
+            [
+                "category_name",
+                "category"
+            ],
+            "Diğer"
+        )
+
+        date_value = get_chat_value(
+            chat,
+            [
+                "created_at",
+                "date",
+                "timestamp"
+            ],
+            "-"
+        )
+
+        chat_id = get_chat_value(
+            chat,
+            [
+                "chat_id",
+                "id"
+            ],
+            "-"
+        )
+
+        row_values = [
+            row_index,
+            get_chat_value(
+                chat,
+                ["question"]
+            ),
+            get_chat_value(
+                chat,
+                ["answer"]
+            ),
+            category,
+            feedback,
+            format_report_date(date_value),
+            chat_id
+        ]
+
+        for column_index, value in enumerate(
+            row_values,
+            start=1
+        ):
+
+            cell = chat_sheet.cell(
+                row=excel_row,
+                column=column_index,
+                value=value
+            )
+
+            cell.alignment = Alignment(
+                vertical="top",
+                wrap_text=True
+            )
+
+    column_widths = {
+        1: 8,
+        2: 36,
+        3: 55,
+        4: 22,
+        5: 20,
+        6: 20,
+        7: 38
+    }
+
+    for column_index, width in column_widths.items():
+
+        column_letter = get_column_letter(
+            column_index
+        )
+
+        chat_sheet.column_dimensions[
+            column_letter
+        ].width = width
+
+    chat_sheet.freeze_panes = "A5"
+
+    statistics_sheet = workbook.create_sheet(
+        "İstatistikler"
+    )
+
+    statistics_sheet.merge_cells(
+        "A1:B1"
+    )
+
+    statistics_sheet["A1"] = (
+        "Smart Support AI - Sistem İstatistikleri"
+    )
+
+    statistics_sheet["A1"].font = title_font
+
+    statistics_sheet["A1"].alignment = Alignment(
+        horizontal="center"
+    )
+
+    statistics_sheet["A3"] = "İstatistik"
+    statistics_sheet["B3"] = "Değer"
+
+    for cell in statistics_sheet[3]:
+
+        cell.fill = header_fill
+        cell.font = header_font
+
+        cell.alignment = Alignment(
+            horizontal="center"
+        )
+
+    statistic_rows = [
+        (
+            "Toplam soru",
+            statistics["total_questions"]
+        ),
+        (
+            "Olumlu geri bildirim",
+            statistics["positive_feedback"]
+        ),
+        (
+            "Olumsuz geri bildirim",
+            statistics["negative_feedback"]
+        ),
+        (
+            "Değerlendirilmeyen",
+            statistics["unanswered_feedback"]
+        ),
+        (
+            "En çok kullanılan kategori",
+            statistics[
+                "most_used_category_name"
+            ]
+        ),
+        (
+            "Kategori soru sayısı",
+            statistics[
+                "most_used_category_count"
+            ]
+        )
+    ]
+
+    for row_index, statistic_row in enumerate(
+        statistic_rows,
+        start=4
+    ):
+
+        statistics_sheet.cell(
+            row=row_index,
+            column=1,
+            value=statistic_row[0]
+        )
+
+        statistics_sheet.cell(
+            row=row_index,
+            column=2,
+            value=statistic_row[1]
+        )
+
+    category_start_row = (
+        len(statistic_rows) + 6
+    )
+
+    statistics_sheet.cell(
+        row=category_start_row,
+        column=1,
+        value="Kategori"
+    )
+
+    statistics_sheet.cell(
+        row=category_start_row,
+        column=2,
+        value="Soru Sayısı"
+    )
+
+    for column_index in range(1, 3):
+
+        cell = statistics_sheet.cell(
+            row=category_start_row,
+            column=column_index
+        )
+
+        cell.fill = header_fill
+        cell.font = header_font
+
+        cell.alignment = Alignment(
+            horizontal="center"
+        )
+
+    for row_offset, category_data in enumerate(
+        statistics["category_statistics"],
+        start=1
+    ):
+
+        statistics_sheet.cell(
+            row=category_start_row + row_offset,
+            column=1,
+            value=category_data["name"]
+        )
+
+        statistics_sheet.cell(
+            row=category_start_row + row_offset,
+            column=2,
+            value=category_data["count"]
+        )
+
+    statistics_sheet.column_dimensions[
+        "A"
+    ].width = 38
+
+    statistics_sheet.column_dimensions[
+        "B"
+    ].width = 22
+
+    report_stream = BytesIO()
+
+    workbook.save(
+        report_stream
+    )
+
+    report_stream.seek(0)
+
+    filename = (
+        "smart_support_raporu_"
+        + datetime.now().strftime(
+            "%Y%m%d_%H%M%S"
+        )
+        + ".xlsx"
+    )
+
+    return send_file(
+        report_stream,
+        as_attachment=True,
+        download_name=filename,
+        mimetype=(
+            "application/vnd.openxmlformats-"
+            "officedocument.spreadsheetml.sheet"
+        )
+    )
+
+
+# ==================================================
+# PDF RAPORU
+# ==================================================
+
+@app.route("/admin/reports/pdf")
+@admin_login_required
+def download_pdf_report():
+    """
+    Sohbet geçmişini ve istatistikleri
+    PDF dosyası olarak indirir.
+    """
+
+    chat_history = prepare_chat_history(
+        get_all_chats()
+    )
+
+    statistics = calculate_statistics(
+        chat_history
+    )
+
+    (
+        regular_font,
+        bold_font
+    ) = register_pdf_fonts()
+
+    report_stream = BytesIO()
+
+    document = SimpleDocTemplate(
+        report_stream,
+        pagesize=landscape(A4),
+        rightMargin=1.2 * cm,
+        leftMargin=1.2 * cm,
+        topMargin=1.2 * cm,
+        bottomMargin=1.2 * cm
+    )
+
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle(
+        "SmartSupportTitle",
+        parent=styles["Title"],
+        fontName=bold_font,
+        fontSize=18,
+        leading=22,
+        alignment=TA_CENTER,
+        textColor=colors.HexColor(
+            "#312E81"
+        ),
+        spaceAfter=12
+    )
+
+    normal_style = ParagraphStyle(
+        "SmartSupportNormal",
+        parent=styles["BodyText"],
+        fontName=regular_font,
+        fontSize=7.5,
+        leading=10
+    )
+
+    bold_style = ParagraphStyle(
+        "SmartSupportBold",
+        parent=normal_style,
+        fontName=bold_font
+    )
+
+    content = []
+
+    content.append(
+        Paragraph(
+            "Smart Support AI - Teknik Destek Raporu",
+            title_style
+        )
+    )
+
+    content.append(
+        Paragraph(
+            "Rapor tarihi: {}".format(
+                datetime.now().strftime(
+                    "%d.%m.%Y %H:%M"
+                )
+            ),
+            normal_style
+        )
+    )
+
+    content.append(
+        Spacer(
+            1,
+            0.4 * cm
+        )
+    )
+
+    summary_data = [
+        [
+            Paragraph(
+                "Toplam Soru",
+                bold_style
+            ),
+            Paragraph(
+                "Olumlu",
+                bold_style
+            ),
+            Paragraph(
+                "Olumsuz",
+                bold_style
+            ),
+            Paragraph(
+                "Değerlendirilmedi",
+                bold_style
+            ),
+            Paragraph(
+                "Popüler Kategori",
+                bold_style
+            )
+        ],
+        [
+            str(
+                statistics[
+                    "total_questions"
+                ]
+            ),
+            str(
+                statistics[
+                    "positive_feedback"
+                ]
+            ),
+            str(
+                statistics[
+                    "negative_feedback"
+                ]
+            ),
+            str(
+                statistics[
+                    "unanswered_feedback"
+                ]
+            ),
+            Paragraph(
+                str(
+                    statistics[
+                        "most_used_category_name"
+                    ]
+                ),
+                normal_style
+            )
+        ]
+    ]
+
+    summary_table = Table(
+        summary_data,
+        colWidths=[
+            3.2 * cm,
+            3.2 * cm,
+            3.2 * cm,
+            3.8 * cm,
+            7 * cm
+        ]
+    )
+
+    summary_table.setStyle(
+        TableStyle(
+            [
+                (
+                    "BACKGROUND",
+                    (0, 0),
+                    (-1, 0),
+                    colors.HexColor("#4F46E5")
+                ),
+                (
+                    "TEXTCOLOR",
+                    (0, 0),
+                    (-1, 0),
+                    colors.white
+                ),
+                (
+                    "BACKGROUND",
+                    (0, 1),
+                    (-1, -1),
+                    colors.HexColor("#EEF2FF")
+                ),
+                (
+                    "ALIGN",
+                    (0, 0),
+                    (-1, -1),
+                    "CENTER"
+                ),
+                (
+                    "VALIGN",
+                    (0, 0),
+                    (-1, -1),
+                    "MIDDLE"
+                ),
+                (
+                    "GRID",
+                    (0, 0),
+                    (-1, -1),
+                    0.5,
+                    colors.HexColor("#CBD5E1")
+                ),
+                (
+                    "TOPPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    8
+                ),
+                (
+                    "BOTTOMPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    8
+                )
+            ]
+        )
+    )
+
+    content.append(
+        summary_table
+    )
+
+    content.append(
+        Spacer(
+            1,
+            0.6 * cm
+        )
+    )
+
+    table_data = [
+        [
+            Paragraph(
+                "No",
+                bold_style
+            ),
+            Paragraph(
+                "Soru",
+                bold_style
+            ),
+            Paragraph(
+                "Cevap",
+                bold_style
+            ),
+            Paragraph(
+                "Kategori",
+                bold_style
+            ),
+            Paragraph(
+                "Geri Bildirim",
+                bold_style
+            ),
+            Paragraph(
+                "Tarih",
+                bold_style
+            )
+        ]
+    ]
+
+    for row_index, chat in enumerate(
+        chat_history,
+        start=1
+    ):
+
+        feedback = format_feedback(
+            get_chat_value(
+                chat,
+                ["feedback"],
+                ""
+            )
+        )
+
+        category = get_chat_value(
+            chat,
+            [
+                "category_name",
+                "category"
+            ],
+            "Diğer"
+        )
+
+        date_value = get_chat_value(
+            chat,
+            [
+                "created_at",
+                "date",
+                "timestamp"
+            ],
+            "-"
+        )
+
+        table_data.append(
+            [
+                str(row_index),
+                Paragraph(
+                    str(
+                        get_chat_value(
+                            chat,
+                            ["question"]
+                        )
+                    ),
+                    normal_style
+                ),
+                Paragraph(
+                    str(
+                        get_chat_value(
+                            chat,
+                            ["answer"]
+                        )
+                    ),
+                    normal_style
+                ),
+                Paragraph(
+                    str(category),
+                    normal_style
+                ),
+                Paragraph(
+                    feedback,
+                    normal_style
+                ),
+                Paragraph(
+                    format_report_date(
+                        date_value
+                    ),
+                    normal_style
+                )
+            ]
+        )
+
+    if not chat_history:
+
+        table_data.append(
+            [
+                "",
+                Paragraph(
+                    "Henüz sohbet kaydı bulunmuyor.",
+                    normal_style
+                ),
+                "",
+                "",
+                "",
+                ""
+            ]
+        )
+
+    chat_table = Table(
+        table_data,
+        repeatRows=1,
+        colWidths=[
+            1 * cm,
+            5 * cm,
+            8.6 * cm,
+            3.3 * cm,
+            3.3 * cm,
+            3.6 * cm
+        ]
+    )
+
+    chat_table.setStyle(
+        TableStyle(
+            [
+                (
+                    "BACKGROUND",
+                    (0, 0),
+                    (-1, 0),
+                    colors.HexColor("#4F46E5")
+                ),
+                (
+                    "TEXTCOLOR",
+                    (0, 0),
+                    (-1, 0),
+                    colors.white
+                ),
+                (
+                    "ALIGN",
+                    (0, 0),
+                    (0, -1),
+                    "CENTER"
+                ),
+                (
+                    "VALIGN",
+                    (0, 0),
+                    (-1, -1),
+                    "TOP"
+                ),
+                (
+                    "GRID",
+                    (0, 0),
+                    (-1, -1),
+                    0.35,
+                    colors.HexColor("#CBD5E1")
+                ),
+                (
+                    "ROWBACKGROUNDS",
+                    (0, 1),
+                    (-1, -1),
+                    [
+                        colors.white,
+                        colors.HexColor("#F8FAFC")
+                    ]
+                ),
+                (
+                    "TOPPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    5
+                ),
+                (
+                    "BOTTOMPADDING",
+                    (0, 0),
+                    (-1, -1),
+                    5
+                )
+            ]
+        )
+    )
+
+    content.append(
+        chat_table
+    )
+
+    document.build(
+        content
+    )
+
+    report_stream.seek(0)
+
+    filename = (
+        "smart_support_raporu_"
+        + datetime.now().strftime(
+            "%Y%m%d_%H%M%S"
+        )
+        + ".pdf"
+    )
+
+    return send_file(
+        report_stream,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/pdf"
+    )
+
+
+# ==================================================
+# VERİTABANI YEDEĞİ
+# ==================================================
+
+@app.route("/admin/reports/database")
+@admin_login_required
+def download_database_backup():
+    """
+    SQLite veritabanını yedek dosyası
+    olarak indirir.
+    """
+
+    if not DATABASE_FILE.exists():
+
+        flash(
+            "Yedeklenecek veritabanı bulunamadı.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_reports")
+        )
+
+    filename = (
+        "smart_support_yedek_"
+        + datetime.now().strftime(
+            "%Y%m%d_%H%M%S"
+        )
+        + ".db"
+    )
+
+    return send_file(
+        str(DATABASE_FILE),
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/octet-stream"
+    )
+
+
+# ==================================================
+# AYARLAR
+# ==================================================
+
+@app.route("/admin/settings")
 @admin_login_required
 def admin_settings():
     """
-    Yönetici ve sistem ayarları sayfası.
+    Admin ayarlar sayfası.
     """
 
     return render_template(
@@ -579,463 +1926,13 @@ def admin_settings():
     )
 
 
-@app.route(
-    "/admin/add",
-    methods=[
-        "POST"
-    ]
-)
-@admin_login_required
-def add_support_item():
-    """
-    Bilgi tabanına yeni teknik destek
-    kaydı ekler.
-    """
-
-    category = request.form.get(
-        "category",
-        ""
-    ).strip()
-
-    question = request.form.get(
-        "question",
-        ""
-    ).strip()
-
-    keywords_text = request.form.get(
-        "keywords",
-        ""
-    ).strip()
-
-    answer = request.form.get(
-        "answer",
-        ""
-    ).strip()
-
-
-    if category not in CATEGORIES:
-
-        flash(
-            "Lütfen geçerli bir kategori seçin.",
-            "error"
-        )
-
-        return redirect(
-            url_for(
-                "admin_knowledge"
-            )
-        )
-
-
-    if not question:
-
-        flash(
-            "Soru alanı boş bırakılamaz.",
-            "error"
-        )
-
-        return redirect(
-            url_for(
-                "admin_knowledge"
-            )
-        )
-
-
-    if not answer:
-
-        flash(
-            "Cevap alanı boş bırakılamaz.",
-            "error"
-        )
-
-        return redirect(
-            url_for(
-                "admin_knowledge"
-            )
-        )
-
-
-    keywords = [
-
-        keyword.strip()
-
-        for keyword
-        in keywords_text.split(
-            ","
-        )
-
-        if keyword.strip()
-    ]
-
-
-    if not keywords:
-
-        keywords = [
-            question
-        ]
-
-
-    support_items = load_questions()
-
-    question_lower = (
-        question.lower()
-    )
-
-
-    duplicate_question = any(
-
-        str(
-            item.get(
-                "question",
-                ""
-            )
-        ).strip().lower()
-        == question_lower
-
-        for item
-        in support_items
-    )
-
-
-    if duplicate_question:
-
-        flash(
-            "Bu soru bilgi tabanında "
-            "zaten bulunuyor.",
-            "error"
-        )
-
-        return redirect(
-            url_for(
-                "admin_knowledge"
-            )
-        )
-
-
-    support_items.append(
-        {
-            "category": category,
-            "question": question,
-            "keywords": keywords,
-            "answer": answer
-        }
-    )
-
-
-    if not save_questions(
-        support_items
-    ):
-
-        flash(
-            "Kayıt eklenirken bir hata oluştu.",
-            "error"
-        )
-
-        return redirect(
-            url_for(
-                "admin_knowledge"
-            )
-        )
-
-
-    flash(
-        "Yeni teknik destek sorusu "
-        "başarıyla eklendi.",
-        "success"
-    )
-
-
-    return redirect(
-        url_for(
-            "admin_knowledge"
-        )
-    )
-
-
-@app.route(
-    "/admin/edit/<int:item_index>",
-    methods=[
-        "POST"
-    ]
-)
-@admin_login_required
-def edit_support_item(item_index):
-    """
-    Bilgi tabanındaki teknik destek
-    kaydını günceller.
-    """
-
-    support_items = load_questions()
-
-
-    if (
-        item_index < 0
-        or item_index
-        >= len(
-            support_items
-        )
-    ):
-
-        flash(
-            "Düzenlemek istediğiniz kayıt "
-            "bulunamadı.",
-            "error"
-        )
-
-        return redirect(
-            url_for(
-                "admin_knowledge"
-            )
-        )
-
-
-    category = request.form.get(
-        "category",
-        ""
-    ).strip()
-
-    question = request.form.get(
-        "question",
-        ""
-    ).strip()
-
-    keywords_text = request.form.get(
-        "keywords",
-        ""
-    ).strip()
-
-    answer = request.form.get(
-        "answer",
-        ""
-    ).strip()
-
-
-    if category not in CATEGORIES:
-
-        flash(
-            "Lütfen geçerli bir kategori seçin.",
-            "error"
-        )
-
-        return redirect(
-            url_for(
-                "admin_knowledge"
-            )
-        )
-
-
-    if not question:
-
-        flash(
-            "Soru alanı boş bırakılamaz.",
-            "error"
-        )
-
-        return redirect(
-            url_for(
-                "admin_knowledge"
-            )
-        )
-
-
-    if not answer:
-
-        flash(
-            "Cevap alanı boş bırakılamaz.",
-            "error"
-        )
-
-        return redirect(
-            url_for(
-                "admin_knowledge"
-            )
-        )
-
-
-    keywords = [
-
-        keyword.strip()
-
-        for keyword
-        in keywords_text.split(
-            ","
-        )
-
-        if keyword.strip()
-    ]
-
-
-    if not keywords:
-
-        keywords = [
-            question
-        ]
-
-
-    question_lower = (
-        question.lower()
-    )
-
-
-    duplicate_question = any(
-
-        index != item_index
-
-        and str(
-            item.get(
-                "question",
-                ""
-            )
-        ).strip().lower()
-        == question_lower
-
-        for (
-            index,
-            item
-        ) in enumerate(
-            support_items
-        )
-    )
-
-
-    if duplicate_question:
-
-        flash(
-            "Bu soru başka bir kayıtta "
-            "zaten bulunuyor.",
-            "error"
-        )
-
-        return redirect(
-            url_for(
-                "admin_knowledge"
-            )
-        )
-
-
-    support_items[
-        item_index
-    ] = {
-        "category": category,
-        "question": question,
-        "keywords": keywords,
-        "answer": answer
-    }
-
-
-    if not save_questions(
-        support_items
-    ):
-
-        flash(
-            "Kayıt düzenlenirken "
-            "bir hata oluştu.",
-            "error"
-        )
-
-        return redirect(
-            url_for(
-                "admin_knowledge"
-            )
-        )
-
-
-    flash(
-        "Teknik destek kaydı "
-        "başarıyla güncellendi.",
-        "success"
-    )
-
-
-    return redirect(
-        url_for(
-            "admin_knowledge"
-        )
-    )
-
-
-@app.route(
-    "/admin/delete/<int:item_index>",
-    methods=[
-        "POST"
-    ]
-)
-@admin_login_required
-def delete_support_item(item_index):
-    """
-    Bilgi tabanındaki teknik destek
-    kaydını siler.
-    """
-
-    support_items = load_questions()
-
-
-    if (
-        item_index < 0
-        or item_index
-        >= len(
-            support_items
-        )
-    ):
-
-        flash(
-            "Silmek istediğiniz kayıt "
-            "bulunamadı.",
-            "error"
-        )
-
-        return redirect(
-            url_for(
-                "admin_knowledge"
-            )
-        )
-
-
-    deleted_item = support_items.pop(
-        item_index
-    )
-
-
-    if not save_questions(
-        support_items
-    ):
-
-        flash(
-            "Kayıt silinirken "
-            "bir hata oluştu.",
-            "error"
-        )
-
-        return redirect(
-            url_for(
-                "admin_knowledge"
-            )
-        )
-
-
-    flash(
-        "'{}' başarıyla silindi.".format(
-            deleted_item.get(
-                "question",
-                "Kayıt"
-            )
-        ),
-        "success"
-    )
-
-
-    return redirect(
-        url_for(
-            "admin_knowledge"
-        )
-    )
-
+# ==================================================
+# GERİ BİLDİRİM
+# ==================================================
 
 @app.route(
     "/feedback/<chat_id>",
-    methods=[
-        "POST"
-    ]
+    methods=["POST"]
 )
 def save_feedback(chat_id):
     """
@@ -1048,39 +1945,39 @@ def save_feedback(chat_id):
         ""
     ).strip()
 
-
     if feedback not in [
         "positive",
         "negative"
     ]:
 
-        return redirect(
-            url_for(
-                "home"
-            )
+        flash(
+            "Geçersiz geri bildirim.",
+            "error"
         )
 
+        return redirect(
+            url_for("home")
+        )
 
     update_feedback(
         chat_id,
         feedback
     )
 
-
     return redirect(
-        url_for(
-            "home"
-        )
+        url_for("home")
         + "#chat-"
         + chat_id
     )
 
 
+# ==================================================
+# SOHBET GEÇMİŞİNİ TEMİZLEME
+# ==================================================
+
 @app.route(
     "/clear-history",
-    methods=[
-        "POST"
-    ]
+    methods=["POST"]
 )
 def clear_history():
     """
@@ -1089,23 +1986,48 @@ def clear_history():
 
     clear_all_chats()
 
+    flash(
+        "Sohbet geçmişi temizlendi.",
+        "success"
+    )
 
     return redirect(
-        url_for(
-            "home"
-        )
+        url_for("home")
     )
 
 
+# ==================================================
+# UYGULAMAYI ÇALIŞTIRMA
+# ==================================================
+
 if __name__ == "__main__":
 
+    print("=" * 55)
+    print("Smart Support AI başlatılıyor")
+    print("=" * 55)
+
     print(
-        "HTML klasörü:",
+        "Şablon klasörü:",
         TEMPLATE_FOLDER
     )
 
     print(
-        "index.html var mı:",
+        "Statik dosya klasörü:",
+        STATIC_FOLDER
+    )
+
+    print(
+        "Bilgi tabanı:",
+        QUESTIONS_FILE
+    )
+
+    print(
+        "Veritabanı:",
+        DATABASE_FILE
+    )
+
+    print(
+        "index.html:",
         (
             TEMPLATE_FOLDER
             / "index.html"
@@ -1113,7 +2035,7 @@ if __name__ == "__main__":
     )
 
     print(
-        "admin_login.html var mı:",
+        "admin_login.html:",
         (
             TEMPLATE_FOLDER
             / "admin_login.html"
@@ -1121,16 +2043,7 @@ if __name__ == "__main__":
     )
 
     print(
-        "admin/base.html var mı:",
-        (
-            TEMPLATE_FOLDER
-            / "admin"
-            / "base.html"
-        ).exists()
-    )
-
-    print(
-        "admin/dashboard.html var mı:",
+        "dashboard.html:",
         (
             TEMPLATE_FOLDER
             / "admin"
@@ -1139,7 +2052,7 @@ if __name__ == "__main__":
     )
 
     print(
-        "admin/knowledge.html var mı:",
+        "knowledge.html:",
         (
             TEMPLATE_FOLDER
             / "admin"
@@ -1148,7 +2061,7 @@ if __name__ == "__main__":
     )
 
     print(
-        "admin/reports.html var mı:",
+        "reports.html:",
         (
             TEMPLATE_FOLDER
             / "admin"
@@ -1157,7 +2070,7 @@ if __name__ == "__main__":
     )
 
     print(
-        "admin/settings.html var mı:",
+        "settings.html:",
         (
             TEMPLATE_FOLDER
             / "admin"
@@ -1165,15 +2078,7 @@ if __name__ == "__main__":
         ).exists()
     )
 
-    print(
-        "Veritabanı hazır:",
-        (
-            PROJECT_FOLDER
-            / "data"
-            / "smart_support.db"
-        ).exists()
-    )
-
+    print("=" * 55)
 
     app.run(
         debug=True
