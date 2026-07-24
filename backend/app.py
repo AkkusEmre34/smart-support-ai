@@ -761,6 +761,127 @@ def calculate_statistics(chat_history):
             low_confidence_questions[:10]
         )
     }
+def normalize_question_text(text):
+    """
+    Soruları karşılaştırmak için metni
+    küçük harfe çevirip boşlukları düzenler.
+    """
+
+    return " ".join(
+        str(text).strip().lower().split()
+    )
+
+
+def get_learning_center_items():
+    """
+    Olumsuz geri bildirim verilen ve henüz
+    bilgi tabanına eklenmemiş soruları döndürür.
+    """
+
+    chat_history = prepare_chat_history(
+        get_all_chats()
+    )
+
+    support_items = load_questions()
+
+    existing_questions = {
+        normalize_question_text(
+            item.get(
+                "question",
+                ""
+            )
+        )
+        for item in support_items
+    }
+
+    learning_items = []
+
+    seen_questions = set()
+
+    for chat in reversed(
+        chat_history
+    ):
+
+        if chat.get("feedback") != "negative":
+            continue
+
+        question = str(
+            chat.get(
+                "question",
+                ""
+            )
+        ).strip()
+
+        if not question:
+            continue
+
+        normalized_question = (
+            normalize_question_text(
+                question
+            )
+        )
+
+        if normalized_question in existing_questions:
+            continue
+
+        if normalized_question in seen_questions:
+            continue
+
+        seen_questions.add(
+            normalized_question
+        )
+
+        category = str(
+            chat.get(
+                "category",
+                "diger"
+            )
+        ).strip()
+
+        if category not in CATEGORIES:
+            category = "diger"
+
+        learning_items.append(
+            {
+                "chat_id": str(
+                    chat.get(
+                        "chat_id",
+                        chat.get(
+                            "id",
+                            ""
+                        )
+                    )
+                ),
+                "question": question,
+                "answer": str(
+                    chat.get(
+                        "answer",
+                        "-"
+                    )
+                ),
+                "category": category,
+                "category_name": CATEGORIES.get(
+                    category,
+                    CATEGORIES["diger"]
+                ),
+                "confidence_score": chat.get(
+                    "confidence_score",
+                    0
+                ),
+                "matched_question": chat.get(
+                    "matched_question",
+                    "-"
+                ),
+                "created_at": format_report_date(
+                    chat.get(
+                        "created_at",
+                        "-"
+                    )
+                )
+            }
+        )
+
+    return learning_items
 
 
 def format_report_date(date_value):
@@ -1546,7 +1667,175 @@ def delete_support_item(item_index):
     return redirect(
         url_for("admin_knowledge")
     )
+# ==================================================
+# YAPAY ZEKÂ ÖĞRENME MERKEZİ
+# ==================================================
 
+@app.route("/admin/learning")
+@admin_login_required
+def admin_learning():
+    """
+    Olumsuz geri bildirim verilen ve bilgi
+    tabanına eklenmesi gereken soruları gösterir.
+    """
+
+    learning_items = (
+        get_learning_center_items()
+    )
+
+    settings = load_settings()
+
+    return render_template(
+        "admin/learning.html",
+        active_page="learning",
+        learning_items=learning_items,
+        categories=CATEGORIES,
+        total_learning_items=len(
+            learning_items
+        ),
+        admin_username=settings.get(
+            "admin_username",
+            "admin"
+        )
+    )
+
+
+@app.route(
+    "/admin/learning/add",
+    methods=["POST"]
+)
+@admin_login_required
+def add_learning_item():
+    """
+    Öğrenme merkezindeki bir soruyu
+    bilgi tabanına ekler.
+    """
+
+    category = request.form.get(
+        "category",
+        "diger"
+    ).strip()
+
+    question = request.form.get(
+        "question",
+        ""
+    ).strip()
+
+    keywords_text = request.form.get(
+        "keywords",
+        ""
+    ).strip()
+
+    answer = request.form.get(
+        "answer",
+        ""
+    ).strip()
+
+    if category not in CATEGORIES:
+        category = "diger"
+
+    if not question:
+
+        flash(
+            "Soru alanı boş bırakılamaz.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_learning")
+        )
+
+    if not answer:
+
+        flash(
+            "Doğru cevap alanı boş bırakılamaz.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_learning")
+        )
+
+    keywords = [
+        keyword.strip()
+        for keyword in keywords_text.split(",")
+        if keyword.strip()
+    ]
+
+    if not keywords:
+
+        keywords = [
+            word
+            for word in question.split()
+            if len(word) >= 3
+        ]
+
+    if not keywords:
+
+        keywords = [
+            question
+        ]
+
+    support_items = load_questions()
+
+    normalized_question = (
+        normalize_question_text(
+            question
+        )
+    )
+
+    duplicate_question = any(
+        normalize_question_text(
+            item.get(
+                "question",
+                ""
+            )
+        ) == normalized_question
+        for item in support_items
+    )
+
+    if duplicate_question:
+
+        flash(
+            "Bu soru bilgi tabanında zaten bulunuyor.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_learning")
+        )
+
+    support_items.append(
+        {
+            "category": category,
+            "question": question,
+            "keywords": keywords,
+            "answer": answer
+        }
+    )
+
+    if not save_questions(
+        support_items
+    ):
+
+        flash(
+            "Öğrenilen cevap kaydedilemedi.",
+            "error"
+        )
+
+        return redirect(
+            url_for("admin_learning")
+        )
+
+    flash(
+        "Yeni cevap bilgi tabanına eklendi. "
+        "Sistem artık bu soruyu cevaplayabilir.",
+        "success"
+    )
+
+    return redirect(
+        url_for("admin_learning")
+    )
 
 # ==================================================
 # RAPORLAR SAYFASI

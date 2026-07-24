@@ -1,0 +1,260 @@
+{% extends "admin/base.html" %}
+
+
+{% block title %}
+    Öğrenme Merkezi | Smart Support AI
+{% endblock %}
+
+
+{% block page_title %}
+    Yapay Zekâ Öğrenme Merkezi
+{% endblock %}
+
+
+{% block page_description %}
+    Olumsuz geri bildirim verilen cevapları inceleyin
+    ve doğru çözümleri bilgi tabanına ekleyin.
+{% endblock %}
+
+
+{% block content %}
+
+    <section class="admin-dashboard">
+
+        <article class="admin-dashboard-card">
+
+            <h3>
+                🧠 Bekleyen Soru
+            </h3>
+
+            <strong>
+                {{ total_learning_items }}
+            </strong>
+
+            <small>
+                İncelenmesi gereken soru
+            </small>
+
+        </article>
+
+
+        <article class="admin-dashboard-card">
+
+            <h3>
+                📚 Öğrenme Sistemi
+            </h3>
+
+            <strong>
+                Aktif
+            </strong>
+
+            <small>
+                Yeni cevaplar bilgi tabanına eklenir
+            </small>
+
+        </article>
+
+    </section>
+
+
+    <section class="admin-content">
+
+        <div class="admin-content-header">
+
+            <div>
+
+                <h2>
+                    👎 Olumsuz Geri Bildirimler
+                </h2>
+
+                <p>
+                    Kullanıcıların faydalı bulmadığı cevapları
+                    doğru çözümlerle güncelleyin.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% for item in learning_items %}
+
+            <article class="learning-card">
+
+                <div class="learning-card-header">
+
+                    <div>
+
+                        <span class="admin-category-badge">
+                            {{ item.category_name }}
+                        </span>
+
+                        <small>
+                            {{ item.created_at }}
+                        </small>
+
+                    </div>
+
+                    <span class="learning-confidence">
+
+                        Güven:
+                        %{{ item.confidence_score }}
+
+                    </span>
+
+                </div>
+
+
+                <div class="learning-question-box">
+
+                    <h3>
+                        Kullanıcının Sorusu
+                    </h3>
+
+                    <p>
+                        {{ item.question }}
+                    </p>
+
+                </div>
+
+
+                <div class="learning-old-answer">
+
+                    <h3>
+                        Sistemin Verdiği Cevap
+                    </h3>
+
+                    <p>
+                        {{ item.answer }}
+                    </p>
+
+                </div>
+
+
+                {% if item.matched_question %}
+
+                    <div class="learning-match">
+
+                        <strong>
+                            Eşleşen bilgi tabanı sorusu:
+                        </strong>
+
+                        {{ item.matched_question }}
+
+                    </div>
+
+                {% endif %}
+
+
+                <form
+                    method="POST"
+                    action="{{ url_for('add_learning_item') }}"
+                    class="learning-form"
+                >
+
+                    <input
+                        type="hidden"
+                        name="question"
+                        value="{{ item.question }}"
+                    >
+
+                    <div class="admin-form-group">
+
+                        <label>
+                            Kategori
+                        </label>
+
+                        <select
+                            name="category"
+                            required
+                        >
+
+                            {% for category_key, category_name in categories.items() %}
+
+                                <option
+                                    value="{{ category_key }}"
+                                    {% if category_key == item.category %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    {{ category_name }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="admin-form-group">
+
+                        <label>
+                            Anahtar Kelimeler
+                        </label>
+
+                        <input
+                            type="text"
+                            name="keywords"
+                            placeholder="Örnek: internet, wifi, bağlantı"
+                        >
+
+                        <small>
+                            Kelimeleri virgülle ayırın. Boş bırakırsanız
+                            sorudan otomatik oluşturulur.
+                        </small>
+
+                    </div>
+
+
+                    <div class="admin-form-group">
+
+                        <label>
+                            Doğru Cevap
+                        </label>
+
+                        <textarea
+                            name="answer"
+                            rows="5"
+                            placeholder="Kullanıcıya verilmesi gereken doğru cevabı yazın..."
+                            required
+                        ></textarea>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="admin-primary-button"
+                    >
+                        🧠 Sisteme Öğret
+                    </button>
+
+                </form>
+
+            </article>
+
+        {% else %}
+
+            <div class="admin-empty-state">
+
+                <div class="admin-empty-icon">
+                    🎉
+                </div>
+
+                <h2>
+                    Bekleyen öğrenme kaydı yok
+                </h2>
+
+                <p>
+                    Olumsuz geri bildirim verilen yeni bir soru
+                    olduğunda burada gösterilecektir.
+                </p>
+
+            </div>
+
+        {% endfor %}
+
+    </section>
+
+{% endblock %}
